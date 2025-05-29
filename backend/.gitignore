@@ -22,3 +22,11 @@ Thumbs.db
 
 # Jupyter Notebook checkpoints (if you use notebooks)
 .ipynb_checkpoints/
+
+# PyInstaller build artifacts
+dist/
+build/
+*.spec
+
+# VS Code settings
+.vscode/
