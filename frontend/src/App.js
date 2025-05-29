@@ -66,7 +66,7 @@ const TONE_OPTIONS = [
   { value: "Academic", label: "Academic", icon: "🤓", tooltip: "Objective and scholarly" },
   { value: "Calm", label: "Calm", icon: "🧘", tooltip: "Relaxed and composed" },
   { value: "Persuasive", label: "Persuasive", icon: "🔥", tooltip: "Convincing and motivating" },
-  { value: "Analytical", label: "Analytical", icon: <LuBrain />, tooltip: "Logical and data-driven" },
+  { value: "Analytical", label: "Analytical", icon: "🧠", tooltip: "Logical and data-driven" },
   { value: "Leadership", label: "Leadership", icon: "🥇", tooltip: "Visionary and inspiring" },
   { value: "Storytelling", label: "Storytelling", icon: "💬", tooltip: "Narrative and engaging" },
   { value: "Custom", label: "Custom", icon: "📝", tooltip: "Define your own tone" }
@@ -540,7 +540,7 @@ export default function App() {
           {/* Left: Form */}
           <section className="w-full lg:w-[46%] flex flex-col justify-center items-center">
             <div className="bg-white dark:bg-gray-900 dark:text-gray-100 rounded-2xl shadow-xl w-full max-w-2xl p-4 sm:p-6 md:p-10 space-y-6 sm:space-y-8 animate-fade-in transition-all duration-300 hover:shadow-2xl">
-              <h2 className="text-xl sm:text-2xl font-bold text-blue-700 mb-2 sm:mb-4 flex items-center gap-2">
+              <h2 className="text-xl sm:text-2xl font-bold mb-2 sm:mb-4 flex items-center gap-2">
                 <span role="img" aria-label="form"></span> Generate Your Cover Letter
               </h2>
               <div
@@ -749,7 +749,7 @@ export default function App() {
             className="w-full lg:w-[54%] flex flex-col justify-center items-center"
           >
             <div className="bg-white dark:bg-gray-900 dark:text-gray-100 rounded-2xl shadow-xl w-full max-w-5xl p-4 sm:p-6 md:p-10 animate-slide-in space-y-4 min-h-[320px] sm:min-h-[400px] flex flex-col transition-all duration-300 hover:shadow-2xl">
-              <h2 className="text-lg sm:text-2xl font-bold mb-2 text-blue-700 text-center max-w-4xl mx-auto" style={{ fontFamily: "'Inter', 'Poppins', 'Roboto', sans-serif" }}>
+              <h2 className="text-lg sm:text-2xl font-bold mb-2 text-center max-w-4xl mx-auto" style={{ fontFamily: "'Inter', 'Poppins', 'Roboto', sans-serif" }}>
                 Tailored Just for You
               </h2>
               {coverLetter ? (

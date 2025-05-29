@@ -13,225 +13,287 @@
   }
 }
 
-/* --- Modern Font Stack --- */
+/* --- Variables --- */
 :root {
   --font-heading: 'Satoshi', 'Clash Display', 'General Sans', 'Inter', 'Poppins', 'Roboto', sans-serif;
   --font-body: 'Inter', 'Space Grotesk', 'DM Sans', 'Poppins', 'Roboto', sans-serif;
+
+  /* Light mode */
+  --color-bg: #FAFAFA;
+  --color-surface: #FAFAFA;
+  --color-card: #FFF;
+  --color-text: #1A1A1A;
+  --color-text-secondary: #555;
+  --color-accent-gold: #CBAE7D;
+  --color-accent-blue: #3B82F6;
+  --color-success: #7ED6A5;
+  --color-error: #E87C7C;
+  --color-divider: #E5E7EB;
+
+  /* Dark mode */
+  --color-bg-dark: #0F1117;
+  --color-surface-dark: #1A1D24;
+  --color-card-dark: #1E1F25;
+  --color-text-dark: #F1F1F1;
+  --color-text-secondary-dark: #B0B0B0;
+  --color-accent-gold-dark: #CBAE7D;
+  --color-accent-blue-dark: #5DADE2;
+  --color-success-dark: #7ED6A5;
+  --color-error-dark: #FF6B6B;
+  --color-divider-dark: #2C2F36;
 }
 
-/* Apply body font */
-body,
-html {
+/* --- Base Styles --- */
+body, html {
   font-family: var(--font-body);
-  background: #FAFAFA !important;
-  color: #1A1A1A;
+  background: var(--color-bg) !important;
+  color: var(--color-text);
   line-height: 1.5 !important;
 }
-
-/* Headings */
+.dark body, .dark html {
+  background: var(--color-bg-dark) !important;
+  color: var(--color-text-dark);
+}
 h1, h2, h3, h4, h5, h6,
 .text-2xl, .text-xl, .text-lg, .font-bold, .font-semibold {
   font-family: var(--font-heading);
   letter-spacing: -0.01em;
 }
 
-/* Header */
+/* --- Layout --- */
 .app-header {
   background: rgba(255, 255, 255, 0.8);
-  padding-top: 1.5rem;
-  padding-bottom: 1.5rem;
-  padding-left: 2rem;
-  padding-right: 2rem;
+  padding: 1.5rem 2rem;
   min-height: 140px;
   box-sizing: border-box;
-  font-family: 'Inter', 'Poppins', 'Roboto', sans-serif;
-  border-bottom: 1px solid #e5e7eb;
+  border-bottom: 1px solid var(--color-divider);
 }
 .dark .app-header {
-  background: #222; /* dark grey */
-  border-bottom: 1px solid #333;
+  background: var(--color-surface-dark);
+  border-bottom: 1px solid var(--color-divider-dark);
 }
-
-/* Footer */
 .app-footer {
   background: rgba(240, 240, 245, 0.85);
   color: #444;
   font-size: 1rem;
-  letter-spacing: 0.01em;
-  border-top: 1px solid #e5e7eb;
+  border-top: 1px solid var(--color-divider);
   width: 100%;
   text-align: center;
   padding: 1rem 0;
 }
 .dark .app-footer,
 .app-footer-dark {
-  background: #222;
-  color: #fff;
-  border-top: 1px solid #333;
+  background: var(--color-card-dark);
+  color: var(--color-text-dark);
+  border-top: 1px solid var(--color-divider-dark);
 }
-
-/* General dark mode backgrounds and text */
-body.dark,
-html.dark {
-  background: #111 !important;
-  color: #fff;
-}
-
-.dark .bg-white {
-  background-color: #222 !important;
-}
-
-.dark .text-blue-700 {
-  color: #fff !important;
-}
-
-.dark .border-gray-200 {
-  border-color: #333 !important;
-}
-
-.dark .bg-blue-50 {
-  background-color: #222 !important;
-}
-
-.dark .text-gray-700 {
-  color: #fff !important;
-}
-
-.dark .bg-gray-50 {
-  background-color: #222 !important;
-}
-
-.dark .border-gray-300 {
-  border-color: #333 !important;
-}
-
-.dark .bg-green-50 {
-  background-color: #222 !important;
-}
-
-.dark .text-green-700 {
-  color: #fff !important;
-}
-
-.dark .bg-yellow-50 {
-  background-color: #222 !important;
-}
-
-.dark .text-yellow-700 {
-  color: #fff !important;
-}
-
-.dark .bg-red-50 {
-  background-color: #222 !important;
-}
-
-.dark .text-red-700 {
-  color: #fff !important;
-}
-
-/* --- Light mode backgrounds and text --- */
-body,
-html {
-  font-family: 'Inter', 'Poppins', 'Roboto', sans-serif;
-  background: #FAFAFA !important; /* Soft off-white */
-  color: #1A1A1A; /* Charcoal black */
-}
-
 .main-content {
-  background: #F4F4F4 !important; /* Very light gray for main area */
-  color: #1A1A1A;
+  background: #F4F4F4 !important;
+  color: var(--color-text);
   padding-top: 170px;
 }
-
-/* Card backgrounds */
-.bg-white {
-  background-color: #FAFAFA !important; /* Soft off-white for cards */
-  color: #1A1A1A !important;
+.dark .main-content {
+  background: var(--color-bg-dark) !important;
+  color: var(--color-text-dark);
 }
 
-/* General text color */
-.text-gray-700,
-.text-gray-800,
-.text-blue-700 {
-  color: #1A1A1A !important; /* Charcoal black */
+/* --- Card/Section Backgrounds --- */
+.bg-white { background-color: var(--color-card) !important; color: var(--color-text) !important; }
+.bg-gray-50 { background-color: #F9FAFB !important; }
+.bg-gray-100 { background-color: #F3F4F6 !important; }
+.bg-gray-200 { background-color: #E5E7EB !important; }
+.bg-gray-800 { background-color: #1F2937 !important; }
+.bg-gray-900 { background-color: #111827 !important; }
+.dark .bg-white,
+.dark .bg-gray-50,
+.dark .bg-gray-100,
+.dark .bg-gray-200 {
+  background-color: var(--color-card-dark) !important;
+  color: var(--color-text-dark) !important;
 }
 
-/* Accent tags */
-.bg-blue-100,
-.text-blue-700 {
-  background: #E6EFFF !important; /* Dusty blue background */
-  color: #4A6FA5 !important;      /* Dusty blue text */
+/* --- Accent Tags --- */
+.bg-blue-100, .text-blue-700 {
+  background: #E6EFFF !important;
+  color: var(--color-accent-blue) !important;
 }
-.bg-green-100,
-.text-green-700 {
-  background: #F7F3EF !important; /* Muted gold background */
-  color: #C6A469 !important;      /* Muted gold text */
+.bg-green-100, .text-green-700 {
+  background: #E6D7B0 !important; /* darker pastel gold */
+  color: #8B6F2F !important;      /* deeper gold text */
 }
-.bg-yellow-100,
-.text-yellow-700 {
-  background: #F7F3F3 !important; /* Soft blush background */
-  color: #E6B8B7 !important;      /* Soft blush text */
-}
-
-/* Error/Score cards */
-.border-red-500,
-.bg-red-50,
-.text-red-700 {
-  border-color: #E87C7C !important;
-  background: #FDECEC !important;
-  color: #E87C7C !important;
-  border-radius: 18px !important;
-}
-
-/* Score yellow */
-.border-yellow-400,
-.bg-yellow-50,
-.text-yellow-700 {
-  border-color: #C6A469 !important;
+.bg-yellow-100, .text-yellow-700 {
   background: #FFF9EC !important;
-  color: #C6A469 !important;
-  border-radius: 18px !important;
+  color: var(--color-accent-gold) !important;
 }
 
-/* Score green */
-.border-green-500,
-.bg-green-50,
-.text-green-700 {
-  border-color: #4A6FA5 !important;
+/* --- Error/Score Cards --- */
+.border-red-500, .bg-red-50, .text-red-700 {
+  border-color: var(--color-error) !important;
+  background: #FDECEC !important;
+  color: var(--color-error) !important;
+  border-radius: 18px !important;
+}
+.border-yellow-400, .bg-yellow-50, .text-yellow-700 {
+  border-color: var(--color-accent-gold) !important;
+  background: #FFF9EC !important;
+  color: var(--color-accent-gold) !important;
+  border-radius: 18px !important;
+}
+.border-green-500, .bg-green-50, .text-green-700 {
+  border-color: var(--color-accent-blue) !important;
   background: #F4F9F4 !important;
-  color: #4A6FA5 !important;
+  color: var(--color-accent-blue) !important;
   border-radius: 18px !important;
 }
 
-/* Button and input tweaks for light mode */
-input,
-textarea,
-select {
-  background: #FAFAFA !important;
-  color: #1A1A1A !important;
-  border-color: #E6E6E6 !important;
+/* --- Interactive Elements --- */
+button, .btn, input[type="button"], input[type="submit"] {
+  border-radius: 12px;
+  border: 1px solid #EAEAEA;
+  background: var(--color-card);
+  color: var(--color-text);
   font-family: var(--font-body);
   font-size: 1em;
-  line-height: 1.5;
+  font-weight: 500;
+  transition: 
+    background 0.15s,
+    color 0.15s,
+    border-color 0.15s,
+    transform 0.12s;
+  box-shadow: none;
+  outline: none;
+  padding: 0.75rem 1.25rem;
+}
+button:hover, .btn:hover, input[type="button"]:hover, input[type="submit"]:hover {
+  background: #F4F4F4;
+  color: var(--color-accent-blue);
+  border-color: var(--color-accent-gold);
+  transform: scale(1.01);
+}
+.dark button, .dark .btn, .dark input[type="button"], .dark input[type="submit"] {
+  background: var(--color-card-dark);
+  color: var(--color-text-dark);
+  border-color: var(--color-divider-dark);
+}
+.dark button:hover, .dark .btn:hover, .dark input[type="button"]:hover, .dark input[type="submit"]:hover {
+  background: #23242A !important;
+  color: var(--color-accent-blue-dark);
+  border-color: var(--color-accent-gold-dark);
 }
 
-/* Marked keywords */
+/* --- Upload CV Container --- */
+.cv-upload-container {
+  background: #F4F4F4 !important;
+  transition: background 0.2s, border 0.2s;
+  animation: fadeInLuxury 0.8s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+.dark .cv-upload-container {
+  background: #1A1D24 !important;
+}
+
+/* --- Tone Selector Pills --- */
+.tone-pill {
+  display: inline-flex;
+  align-items: center;
+  border-radius: 999px;
+  background: #F4F4F4;
+  color: var(--color-accent-blue);
+  font-family: var(--font-body);
+  font-size: 1em;
+  font-weight: 500;
+  padding: 0.45em 1.2em;
+  margin-right: 0.5em;
+  border: 1px solid #EAEAEA;
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s, border-color 0.15s, transform 0.12s;
+}
+.tone-pill.selected,
+.tone-pill:active {
+  background: #E6EFFF;
+  color: var(--color-text);
+  border-color: var(--color-accent-blue);
+  transform: scale(1.03);
+}
+.tone-pill:hover {
+  background: #E6EFFF;
+  color: var(--color-accent-blue);
+  border-color: #2C2F36; /* dark gray */
+  transform: scale(1.01);
+}
+.dark .tone-pill {
+  background: #23242A;
+  color: var(--color-accent-blue-dark);
+  border-color: var(--color-divider-dark);
+}
+.dark .tone-pill.selected,
+.dark .tone-pill:active,
+.dark .tone-pill:hover {
+  background: #23242A;
+  color: var(--color-accent-blue-dark);
+  border-color: var(--color-accent-gold-dark);
+}
+
+/* --- Requirement/Keyword Highlights --- */
+.requirement-matched,
+.text-green-700.requirement-matched {
+  color: #3C6F4A !important;
+}
+.requirement-missing {
+  background: #FDECEC !important;
+  border-radius: 8px !important;
+  padding: 2px 8px !important;
+}
 mark {
   background: #FFF9EC !important;
-  color: #C6A469 !important;
+  color: var(--color-accent-gold) !important;
   border-radius: 4px;
   font-family: var(--font-body);
 }
-
-/* Accent for links */
-a,
-.App-link {
-  color: #4A6FA5;
-  font-family: var(--font-body);
+.dark mark {
+  background: #23242A !important;
+  color: var(--color-accent-gold-dark) !important;
 }
 
-.App-link {
-  color: #61dafb;
+/* --- Animations --- */
+@keyframes fadeInLuxury {
+  from {
+    opacity: 0;
+    transform: translateY(24px) scale(0.98);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+.animate-fade-in,
+.fade-in-luxury {
+  animation: fadeInLuxury 0.8s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+.animate-slide-in {
+  animation: slideIn 0.7s;
+}
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: translateY(40px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+/* --- Responsive --- */
+@media (max-width: 600px) {
+  .jobfit-score-card {
+    flex-direction: column;
+    gap: 0.5rem;
+    padding: 1.2rem 0.5rem;
+  }
+  .progress-ring {
+    margin-right: 0;
+    margin-bottom: 0.5rem;
+  }
 }
 
 @keyframes App-logo-spin {
@@ -315,52 +377,6 @@ html {
   background-color: #444 !important;
 }
 
-/* --- Interactive Elements --- */
-
-/* Buttons: Flat/outlined, micro hover effect */
-button,
-.btn,
-input[type="button"],
-input[type="submit"] {
-  border-radius: 12px;
-  border: 1px solid #EAEAEA;
-  background: #FAFAFA;
-  color: #1A1A1A;
-  font-family: var(--font-body);
-  font-size: 1em;
-  font-weight: 500;
-  transition: 
-    background 0.15s,
-    color 0.15s,
-    border-color 0.15s,
-    transform 0.12s;
-  box-shadow: none;
-  outline: none;
-  padding: 0.75rem 1.25rem;
-}
-
-button:hover,
-.btn:hover,
-input[type="button"]:hover,
-input[type="submit"]:hover {
-  background: #F4F4F4;
-  color: #4A6FA5;
-  border-color: #C6A469;
-  transform: scale(1.01);
-}
-
-/* Outlined variant */
-.btn-outline {
-  background: transparent;
-  border: 1.5px solid #EAEAEA;
-  color: #4A6FA5;
-}
-.btn-outline:hover {
-  background: #E6EFFF;
-  color: #1A1A1A;
-  border-color: #4A6FA5;
-}
-
 /* --- Job-Fit Score: Minimal progress ring, pastel backgrounds --- */
 /* For the ring, use a container with .progress-ring and .progress-ring__circle classes */
 .progress-ring {
@@ -403,67 +419,6 @@ input[type="submit"]:hover {
   font-size: 2rem;
   font-weight: 700;
   color: #C6A469;
-}
-
-/* --- Tone Selector: Text pills or icons-only, muted palette --- */
-.tone-pill {
-  display: inline-flex;
-  align-items: center;
-  border-radius: 999px;
-  background: #F4F4F4;
-  color: #4A6FA5;
-  font-family: var(--font-body);
-  font-size: 1em;
-  font-weight: 500;
-  padding: 0.45em 1.2em;
-  margin-right: 0.5em;
-  border: 1px solid #EAEAEA;
-  cursor: pointer;
-  transition: background 0.15s, color 0.15s, border-color 0.15s, transform 0.12s;
-}
-.tone-pill.selected,
-.tone-pill:active {
-  background: #E6EFFF;
-  color: #1A1A1A;
-  border-color: #4A6FA5;
-  transform: scale(1.03);
-}
-.tone-pill:hover {
-  background: #E6EFFF;
-  color: #4A6FA5;
-  border-color: #C6A469;
-  transform: scale(1.01);
-}
-.tone-pill .icon-only {
-  font-size: 1.2em;
-  margin-right: 0;
-  margin-left: 0;
-}
-
-/* Remove emoji-heavy look for tone selector pills */
-.tone-pill .emoji {
-  display: none;
-}
-
-/* For icon-only pills, just show the icon */
-.tone-pill.icon-only {
-  padding: 0.45em 0.7em;
-  font-size: 1.3em;
-}
-
-/* --- Requirement Match Details --- */
-
-/* Matched requirements: pastel dark green text */
-.requirement-matched,
-.text-green-700.requirement-matched {
-  color: #3C6F4A !important;
-}
-
-/* Missing requirements: very light red pastel background */
-.requirement-missing {
-  background: #FDECEC !important;
-  border-radius: 8px !important;
-  padding: 2px 8px !important;
 }
 
 /* --- Fade-in Animation --- */
@@ -537,21 +492,17 @@ input[type="submit"]:hover {
   animation: fadeInLuxury 0.6s cubic-bezier(0.22, 1, 0.36, 1) both;
 }
 
-/* Responsive adjustments */
-@media (max-width: 600px) {
-  .jobfit-score-card {
-    flex-direction: column;
-    gap: 0.5rem;
-    padding: 1.2rem 0.5rem;
-  }
-  .progress-ring {
-    margin-right: 0;
-    margin-bottom: 0.5rem;
-  }
+/* Ensure top header icon buttons use dark gray border on hover, not gold */
+.app-header button:hover,
+.app-header .btn:hover {
+  border-color: #2C2F36 !important;
 }
 
-.cv-upload-container {
-  background: #F4F4F4 !important; /* Very light grey */
-  transition: background 0.2s, border 0.2s;
-  animation: fadeInLuxury 0.8s cubic-bezier(0.22, 1, 0.36, 1) both;
+/* If you use Tailwind's border classes, also override those */
+.app-header button:hover,
+.app-header .btn:hover,
+.app-header button:focus,
+.app-header .btn:focus {
+  --tw-border-opacity: 1 !important;
+  border-color: #2C2F36 !important;
 }
