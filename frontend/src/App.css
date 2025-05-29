@@ -13,6 +13,28 @@
   }
 }
 
+/* --- Modern Font Stack --- */
+:root {
+  --font-heading: 'Satoshi', 'Clash Display', 'General Sans', 'Inter', 'Poppins', 'Roboto', sans-serif;
+  --font-body: 'Inter', 'Space Grotesk', 'DM Sans', 'Poppins', 'Roboto', sans-serif;
+}
+
+/* Apply body font */
+body,
+html {
+  font-family: var(--font-body);
+  background: #FAFAFA !important;
+  color: #1A1A1A;
+  line-height: 1.5 !important;
+}
+
+/* Headings */
+h1, h2, h3, h4, h5, h6,
+.text-2xl, .text-xl, .text-lg, .font-bold, .font-semibold {
+  font-family: var(--font-heading);
+  letter-spacing: -0.01em;
+}
+
 /* Header */
 .app-header {
   background: rgba(255, 255, 255, 0.8);
@@ -107,6 +129,107 @@ html.dark {
   color: #fff !important;
 }
 
+/* --- Light mode backgrounds and text --- */
+body,
+html {
+  font-family: 'Inter', 'Poppins', 'Roboto', sans-serif;
+  background: #FAFAFA !important; /* Soft off-white */
+  color: #1A1A1A; /* Charcoal black */
+}
+
+.main-content {
+  background: #F4F4F4 !important; /* Very light gray for main area */
+  color: #1A1A1A;
+  padding-top: 170px;
+}
+
+/* Card backgrounds */
+.bg-white {
+  background-color: #FAFAFA !important; /* Soft off-white for cards */
+  color: #1A1A1A !important;
+}
+
+/* General text color */
+.text-gray-700,
+.text-gray-800,
+.text-blue-700 {
+  color: #1A1A1A !important; /* Charcoal black */
+}
+
+/* Accent tags */
+.bg-blue-100,
+.text-blue-700 {
+  background: #E6EFFF !important; /* Dusty blue background */
+  color: #4A6FA5 !important;      /* Dusty blue text */
+}
+.bg-green-100,
+.text-green-700 {
+  background: #F7F3EF !important; /* Muted gold background */
+  color: #C6A469 !important;      /* Muted gold text */
+}
+.bg-yellow-100,
+.text-yellow-700 {
+  background: #F7F3F3 !important; /* Soft blush background */
+  color: #E6B8B7 !important;      /* Soft blush text */
+}
+
+/* Error/Score cards */
+.border-red-500,
+.bg-red-50,
+.text-red-700 {
+  border-color: #E87C7C !important;
+  background: #FDECEC !important;
+  color: #E87C7C !important;
+  border-radius: 18px !important;
+}
+
+/* Score yellow */
+.border-yellow-400,
+.bg-yellow-50,
+.text-yellow-700 {
+  border-color: #C6A469 !important;
+  background: #FFF9EC !important;
+  color: #C6A469 !important;
+  border-radius: 18px !important;
+}
+
+/* Score green */
+.border-green-500,
+.bg-green-50,
+.text-green-700 {
+  border-color: #4A6FA5 !important;
+  background: #F4F9F4 !important;
+  color: #4A6FA5 !important;
+  border-radius: 18px !important;
+}
+
+/* Button and input tweaks for light mode */
+input,
+textarea,
+select {
+  background: #FAFAFA !important;
+  color: #1A1A1A !important;
+  border-color: #E6E6E6 !important;
+  font-family: var(--font-body);
+  font-size: 1em;
+  line-height: 1.5;
+}
+
+/* Marked keywords */
+mark {
+  background: #FFF9EC !important;
+  color: #C6A469 !important;
+  border-radius: 4px;
+  font-family: var(--font-body);
+}
+
+/* Accent for links */
+a,
+.App-link {
+  color: #4A6FA5;
+  font-family: var(--font-body);
+}
+
 .App-link {
   color: #61dafb;
 }
@@ -190,4 +313,245 @@ html {
 .dark .bg-blue-700:hover,
 .dark .bg-blue-600:hover {
   background-color: #444 !important;
+}
+
+/* --- Interactive Elements --- */
+
+/* Buttons: Flat/outlined, micro hover effect */
+button,
+.btn,
+input[type="button"],
+input[type="submit"] {
+  border-radius: 12px;
+  border: 1px solid #EAEAEA;
+  background: #FAFAFA;
+  color: #1A1A1A;
+  font-family: var(--font-body);
+  font-size: 1em;
+  font-weight: 500;
+  transition: 
+    background 0.15s,
+    color 0.15s,
+    border-color 0.15s,
+    transform 0.12s;
+  box-shadow: none;
+  outline: none;
+  padding: 0.75rem 1.25rem;
+}
+
+button:hover,
+.btn:hover,
+input[type="button"]:hover,
+input[type="submit"]:hover {
+  background: #F4F4F4;
+  color: #4A6FA5;
+  border-color: #C6A469;
+  transform: scale(1.01);
+}
+
+/* Outlined variant */
+.btn-outline {
+  background: transparent;
+  border: 1.5px solid #EAEAEA;
+  color: #4A6FA5;
+}
+.btn-outline:hover {
+  background: #E6EFFF;
+  color: #1A1A1A;
+  border-color: #4A6FA5;
+}
+
+/* --- Job-Fit Score: Minimal progress ring, pastel backgrounds --- */
+/* For the ring, use a container with .progress-ring and .progress-ring__circle classes */
+.progress-ring {
+  display: inline-block;
+  position: relative;
+  width: 54px;
+  height: 54px;
+  margin-right: 1rem;
+  vertical-align: middle;
+}
+.progress-ring__circle {
+  stroke: #C6A469;
+  stroke-width: 6;
+  fill: none;
+  transition: stroke-dasharray 0.3s;
+}
+.progress-ring__bg {
+  stroke: #EAEAEA;
+  stroke-width: 6;
+  fill: none;
+}
+.jobfit-score-card {
+  background: #FFF9EC !important; /* pastel gold */
+  border-radius: 16px;
+  border: none !important;
+  box-shadow: 0px 2px 10px rgba(0,0,0,0.05);
+  padding: 2rem 1.5rem;
+  color: #1A1A1A;
+  display: flex;
+  align-items: center;
+  gap: 1.5rem;
+}
+.jobfit-score-card .score-label {
+  font-family: var(--font-heading);
+  font-size: 1.2rem;
+  font-weight: 600;
+  color: #333;
+}
+.jobfit-score-card .score-value {
+  font-size: 2rem;
+  font-weight: 700;
+  color: #C6A469;
+}
+
+/* --- Tone Selector: Text pills or icons-only, muted palette --- */
+.tone-pill {
+  display: inline-flex;
+  align-items: center;
+  border-radius: 999px;
+  background: #F4F4F4;
+  color: #4A6FA5;
+  font-family: var(--font-body);
+  font-size: 1em;
+  font-weight: 500;
+  padding: 0.45em 1.2em;
+  margin-right: 0.5em;
+  border: 1px solid #EAEAEA;
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s, border-color 0.15s, transform 0.12s;
+}
+.tone-pill.selected,
+.tone-pill:active {
+  background: #E6EFFF;
+  color: #1A1A1A;
+  border-color: #4A6FA5;
+  transform: scale(1.03);
+}
+.tone-pill:hover {
+  background: #E6EFFF;
+  color: #4A6FA5;
+  border-color: #C6A469;
+  transform: scale(1.01);
+}
+.tone-pill .icon-only {
+  font-size: 1.2em;
+  margin-right: 0;
+  margin-left: 0;
+}
+
+/* Remove emoji-heavy look for tone selector pills */
+.tone-pill .emoji {
+  display: none;
+}
+
+/* For icon-only pills, just show the icon */
+.tone-pill.icon-only {
+  padding: 0.45em 0.7em;
+  font-size: 1.3em;
+}
+
+/* --- Requirement Match Details --- */
+
+/* Matched requirements: pastel dark green text */
+.requirement-matched,
+.text-green-700.requirement-matched {
+  color: #3C6F4A !important;
+}
+
+/* Missing requirements: very light red pastel background */
+.requirement-missing {
+  background: #FDECEC !important;
+  border-radius: 8px !important;
+  padding: 2px 8px !important;
+}
+
+/* --- Fade-in Animation --- */
+@keyframes fadeInLuxury {
+  from {
+    opacity: 0;
+    transform: translateY(24px) scale(0.98);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+.animate-fade-in,
+.fade-in-luxury {
+  animation: fadeInLuxury 0.8s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+/* --- Smooth Transitions for Buttons and Sections --- */
+button,
+.btn,
+input[type="button"],
+input[type="submit"] {
+  transition:
+    background 0.18s cubic-bezier(0.22, 1, 0.36, 1),
+    color 0.18s cubic-bezier(0.22, 1, 0.36, 1),
+    border-color 0.18s cubic-bezier(0.22, 1, 0.36, 1),
+    box-shadow 0.18s cubic-bezier(0.22, 1, 0.36, 1),
+    transform 0.18s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+button:hover,
+.btn:hover,
+input[type="button"]:hover,
+input[type="submit"]:hover {
+  box-shadow: 0 4px 18px rgba(74, 111, 165, 0.07);
+  transform: scale(1.015);
+  filter: brightness(0.98);
+}
+
+/* Section/card transitions */
+.bg-white,
+.bg-gray-50,
+.bg-gray-100,
+.bg-gray-200,
+.bg-gray-800,
+.bg-gray-900,
+.rounded-2xl,
+.rounded-xl,
+.rounded-lg,
+.shadow-xl,
+.shadow {
+  transition:
+    box-shadow 0.22s cubic-bezier(0.22, 1, 0.36, 1),
+    background 0.22s cubic-bezier(0.22, 1, 0.36, 1),
+    border-color 0.22s cubic-bezier(0.22, 1, 0.36, 1),
+    transform 0.22s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.bg-white:hover,
+.bg-gray-50:hover,
+.bg-gray-100:hover {
+  box-shadow: 0px 8px 32px rgba(74, 111, 165, 0.10);
+  transform: translateY(-2px) scale(1.01);
+}
+
+/* Optional: fade-in for modal/history */
+.fixed.inset-0 > .bg-white,
+.fixed.inset-0 > .dark\:bg-gray-900 {
+  animation: fadeInLuxury 0.6s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+/* Responsive adjustments */
+@media (max-width: 600px) {
+  .jobfit-score-card {
+    flex-direction: column;
+    gap: 0.5rem;
+    padding: 1.2rem 0.5rem;
+  }
+  .progress-ring {
+    margin-right: 0;
+    margin-bottom: 0.5rem;
+  }
+}
+
+.cv-upload-container {
+  background: #F4F4F4 !important; /* Very light grey */
+  transition: background 0.2s, border 0.2s;
+  animation: fadeInLuxury 0.8s cubic-bezier(0.22, 1, 0.36, 1) both;
 }

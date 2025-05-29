@@ -357,7 +357,7 @@ export default function App() {
   }
 
   // Example for rendering grouped requirements
-  function renderGroupedRequirements(grouped, color, icon) {
+  function renderGroupedRequirements(grouped, color, icon, isMissing = false, isMatched = false) {
     return Object.entries(grouped).map(([cat, items]) => (
       <div key={cat} className="mb-2">
         <div className={`font-semibold mb-1 flex items-center gap-1 ${color}`}>
@@ -365,7 +365,17 @@ export default function App() {
         </div>
         <ul className="space-y-1">
           {items.map((req, i) => (
-            <li key={i} className={`flex items-center gap-1 text-sm ${color}`}>
+            <li
+              key={i}
+              className={`flex items-center gap-1 text-sm ${color}`}
+              style={
+                isMissing
+                  ? { background: "#FDECEC", borderRadius: "8px", padding: "2px 8px" }
+                  : isMatched
+                  ? { color: "#3C6F4A" } // pastel dark green
+                  : undefined
+              }
+            >
               {icon} {req}
             </li>
           ))}
@@ -484,7 +494,7 @@ export default function App() {
       >
         <span className="flex items-center gap-4">
           <img
-            src="/logo.png"
+            src={dark ? "/logo-dark.png" : "/logo.png"}
             alt="COVRLY.AI Logo"
             className="h-[110px] w-auto"
             style={{ maxHeight: 110 }}
@@ -534,8 +544,8 @@ export default function App() {
                 <span role="img" aria-label="form"></span> Generate Your Cover Letter
               </h2>
               <div
-                className={`w-full border-2 border-dashed rounded-md p-4 sm:p-6 flex flex-col items-center justify-center cursor-pointer transition focus:ring-2 focus:ring-blue-300
-                  ${resumeFile ? "border-green-400 bg-green-50" : "border-gray-300 bg-white dark:bg-gray-900 hover:bg-blue-50"}`}
+                className={`cv-upload-container w-full border-2 border-dashed rounded-md p-4 sm:p-6 flex flex-col items-center justify-center cursor-pointer transition focus:ring-2 focus:ring-blue-300
+                  ${resumeFile ? "border-green-400 bg-green-50" : "border-gray-300"}`}
                 onDragOver={e => {
                   e.preventDefault();
                   e.stopPropagation();
@@ -556,7 +566,6 @@ export default function App() {
                   }
                 }}
                 onClick={() => document.getElementById("resume-upload").click()}
-                style={{ transition: "border 0.2s, background 0.2s" }}
               >
                 <input
                   id="resume-upload"
@@ -602,7 +611,7 @@ export default function App() {
                   </span>
                 </div>
                 {jobTitle && !jobTitleEdit && (
-                  <div className="my-2 p-2 bg-blue-50 border border-blue-200 rounded text-blue-800 text-sm flex items-center gap-2">
+                  <div className="my-2 p-2 bg-green-50 border border-green-200 rounded text-green-800 text-sm flex items-center gap-2">
                     <span>
                       We detected this job title: <b>{jobTitle}</b> —{" "}
                       <span
@@ -623,7 +632,7 @@ export default function App() {
                       maxLength={50}
                     />
                     <button
-                      className="bg-blue-600 text-white px-3 py-1 rounded"
+                      className="bg-green-600 text-white px-3 py-1 rounded"
                       onClick={() => {
                         setJobTitleEdit(false);
                         // If editing the current letter, update its job title in history
@@ -741,7 +750,7 @@ export default function App() {
           >
             <div className="bg-white dark:bg-gray-900 dark:text-gray-100 rounded-2xl shadow-xl w-full max-w-5xl p-4 sm:p-6 md:p-10 animate-slide-in space-y-4 min-h-[320px] sm:min-h-[400px] flex flex-col transition-all duration-300 hover:shadow-2xl">
               <h2 className="text-lg sm:text-2xl font-bold mb-2 text-blue-700 text-center max-w-4xl mx-auto" style={{ fontFamily: "'Inter', 'Poppins', 'Roboto', sans-serif" }}>
-                Tailored Just for You 🖊️✨
+                Tailored Just for You
               </h2>
               {coverLetter ? (
                 <>
@@ -803,13 +812,14 @@ export default function App() {
                   ) : (
                     <>
                       <pre
-                        className={`whitespace-pre-wrap text-gray-800 font-mono flex-1 transition-all duration-300 rounded-lg border p-3 bg-gray-50 ${
+                        className={`whitespace-pre-wrap font-mono flex-1 transition-all duration-300 rounded-lg border p-3 bg-gray-50 dark:bg-gray-800 ${
                           expanded ? "max-h-[900px]" : "max-h-[400px]"
                         } min-h-[320px] sm:min-h-[400px] w-full text-xs sm:text-base overflow-auto`}
                         style={{
                           fontFamily: "inherit",
                           direction: language === "Arabic" ? "rtl" : "ltr",
-                          textAlign: language === "Arabic" ? "right" : "left"
+                          textAlign: language === "Arabic" ? "right" : "left",
+                          color: dark ? "#fff" : "#222" // Make text white in dark mode, dark in light mode
                         }}
                       >
                         {highlightKeywords(coverLetter, keywords)}
@@ -966,11 +976,22 @@ export default function App() {
                       <div className="flex flex-col sm:flex-row gap-4">
                         {/* Matched */}
                         <div className="flex-1 min-w-[120px] max-h-40 overflow-y-auto pr-1">
-                          {renderGroupedRequirements(jobFitScore.requirements.matched, "text-green-700", <MdCheckCircle className="text-green-400" />)}
+                          {renderGroupedRequirements(
+                            jobFitScore.requirements.matched,
+                            "text-green-700",
+                            <MdCheckCircle className="text-green-400" />,
+                            false, // isMissing
+                            true   // isMatched
+                          )}
                         </div>
                         {/* Missing */}
                         <div className="flex-1 min-w-[120px] max-h-40 overflow-y-auto pr-1">
-                          {renderGroupedRequirements(jobFitScore.requirements.missing, "text-red-700", <MdErrorOutline className="text-red-400" />)}
+                          {renderGroupedRequirements(
+                            jobFitScore.requirements.missing,
+                            "text-red-700",
+                            <MdErrorOutline className="text-red-400" />,
+                            true // isMissing
+                          )}
                         </div>
                       </div>
                     </div>
@@ -1044,18 +1065,22 @@ function deleteLetterFromHistory(id) {
 }
 
 function downloadLetterAsPDF(letter, name = "cover-letter.pdf", jobTitle = "", company = "") {
-  // Format date as YYYY-MM-DD
-  const dateStr = new Date().toISOString().slice(0, 10);
-  const clean = str =>
-    (str || "")
-      .replace(/[^a-zA-Z0-9]+/g, "")
-      .slice(0, 30);
+  // Use the provided name (from history/rename) if available
+  let fileName = name && name.trim() ? name.trim() : undefined;
 
-  let fileName = `📄 CoverLetter_`;
-  if (jobTitle || company) {
-    fileName += `${clean(jobTitle) || "Custom"}_${clean(company) || "Custom"}_${dateStr}.pdf`;
-  } else {
-    fileName += `Custom_${dateStr}.pdf`;
+  // Fallback to default naming if no name provided
+  if (!fileName) {
+    const dateStr = new Date().toISOString().slice(0, 10);
+    const clean = str =>
+      (str || "")
+        .replace(/[^a-zA-Z0-9]+/g, "")
+        .slice(0, 30);
+    fileName = `CoverLetter_${clean(jobTitle) || "Custom"}_${clean(company) || "Custom"}_${dateStr}`;
+  }
+
+  // Ensure .pdf extension
+  if (!fileName.toLowerCase().endsWith(".pdf")) {
+    fileName += ".pdf";
   }
 
   // --- Improved PDF formatting ---
