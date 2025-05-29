@@ -16,7 +16,7 @@ Coverly.ai is a modern web application that helps you create tailored, professio
 ## Tech Stack
 
 - **Frontend:** React, Tailwind CSS, React Icons, React Hot Toast
-- **Backend:** Python, Flask, PyPDF2, Google Gemini API (Generative AI)
+- **Backend:** Python, Flask, PyPDF2, Google Gemini API
 - **Other:** CORS, REST API
 
 ## Getting Started
@@ -32,8 +32,8 @@ Coverly.ai is a modern web application that helps you create tailored, professio
 #### 1. Clone the repository
 
 ```bash
-git clone https://github.com/yourusername/coverly.ai.git
-cd coverly.ai
+git clone https://github.com/yourusername/smart-cover-letter.git
+cd smart-cover-letter
 ```
 
 #### 2. Backend Setup
