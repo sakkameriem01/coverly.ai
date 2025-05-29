@@ -5,18 +5,17 @@ import axios from "axios";
 import { Toaster, toast } from "react-hot-toast";
 import { BiCopy } from "react-icons/bi";
 import { MdOutlineDone, MdOutlineDarkMode, MdOutlineLightMode, MdExpandMore, MdOutlineEdit, MdCheckCircle, MdErrorOutline, MdInfoOutline, MdOutlineDelete, MdDriveFileRenameOutline, MdOutlineFileDownload } from "react-icons/md";
-import { LuBrain } from "react-icons/lu";
+import { LuBrain, LuHistory } from "react-icons/lu";
 import { BsCircleFill } from "react-icons/bs";
 import { IoLanguageOutline } from "react-icons/io5";
 import { FaStar } from "react-icons/fa";
 import jsPDF from "jspdf"; // npm install jspdf
-import { LuHistory } from "react-icons/lu";
 import './App.css';
 
-// Utility: Extract top N keywords from job description
+// --- Utility Functions ---
+
 function extractKeywords(text, topN = 8) {
   if (!text) return [];
-  // Remove punctuation, split, filter out short/common words
   const stopWords = new Set([
     "the", "and", "for", "with", "that", "this", "from", "are", "was", "but", "not", "have", "has", "will", "can", "all", "you", "your", "our", "they", "their", "job", "role", "work", "who", "what", "when", "where", "how", "why", "a", "an", "to", "of", "in", "on", "as", "by", "at", "is", "it", "be", "or", "we"
   ]);
@@ -33,12 +32,9 @@ function extractKeywords(text, topN = 8) {
     .map(([word]) => word);
 }
 
-// Utility: Highlight keywords in the cover letter
 function highlightKeywords(text, keywords) {
   if (!keywords.length) return text;
-  // Build a regex for all keywords (word boundaries, case-insensitive)
   const pattern = new RegExp(`\\b(${keywords.join('|')})\\b`, 'gi');
-  // Split and wrap matches
   const parts = [];
   let lastIndex = 0;
   let match;
@@ -108,7 +104,6 @@ function ToneSelector({ selectedTone, setSelectedTone, customTone, setCustomTone
   );
 }
 
-// Add this helper for color classes
 const SCORE_COLORS = {
   red: "border-red-500 bg-red-50 text-red-700",
   yellow: "border-yellow-400 bg-yellow-50 text-yellow-700",
@@ -127,22 +122,17 @@ const LANGUAGE_OPTIONS = [
   { value: "Arabic", label: "العربية", icon: "🇸🇦" }
 ];
 
-// --- Add this helper function for rating ---
 function getCoverLetterScore(jobDescription, coverLetter) {
-  // Simple keyword overlap: count how many job keywords appear in the letter
   const jobKeywords = extractKeywords(jobDescription, 12);
   if (!coverLetter || !jobDescription || jobKeywords.length === 0) return { score: 0, stars: 0, message: "Not enough data to rate." };
-
   let matchCount = 0;
   jobKeywords.forEach(kw => {
     const regex = new RegExp(`\\b${kw}\\b`, "i");
     if (regex.test(coverLetter)) matchCount++;
   });
-
   const percent = Math.round((matchCount / jobKeywords.length) * 100);
   let stars = 1;
   let message = "Needs improvement. Try to include more relevant details.";
-
   if (percent >= 90) {
     stars = 5;
     message = "Excellent! Your letter aligns perfectly with the job description.";
@@ -156,11 +146,9 @@ function getCoverLetterScore(jobDescription, coverLetter) {
     stars = 2;
     message = "Some relevant content, but more alignment is needed.";
   }
-
   return { score: percent, stars, message };
 }
 
-// --- Add Gemini-powered company name extraction helper ---
 async function fetchCompanyName(jobDescription) {
   if (!jobDescription) return "";
   try {
@@ -176,7 +164,6 @@ async function fetchCompanyName(jobDescription) {
   }
 }
 
-// --- Update saveLetterToHistory to use Gemini-powered jobTitle and company ---
 function saveLetterToHistory(letter, jobDescription, meta = {}) {
   const history = JSON.parse(localStorage.getItem("coverLetterHistory") || "[]");
   const entry = {
@@ -195,9 +182,12 @@ function saveLetterToHistory(letter, jobDescription, meta = {}) {
   localStorage.setItem("coverLetterHistory", JSON.stringify(history));
 }
 
+// --- Main App Component ---
+
 export default function App() {
+  // --- State ---
   const [resumeFile, setResumeFile] = useState(null);
-  const [resumeFileCache, setResumeFileCache] = useState(null); // cache for regeneration
+  const [resumeFileCache, setResumeFileCache] = useState(null);
   const [jobDescription, setJobDescription] = useState('');
   const [jobDescriptionCache, setJobDescriptionCache] = useState('');
   const [coverLetter, setCoverLetter] = useState('');
@@ -223,10 +213,10 @@ export default function App() {
   const [companyName, setCompanyName] = useState("");
   const [companyNameEdit, setCompanyNameEdit] = useState(false);
 
-  // Extract keywords whenever jobDescription changes
+  // --- Derived ---
   const keywords = extractKeywords(jobDescription);
 
-  // Apply/remove dark class on body
+  // --- Effects ---
   useEffect(() => {
     if (dark) {
       document.documentElement.classList.add('dark');
@@ -235,41 +225,33 @@ export default function App() {
     }
   }, [dark]);
 
-  // When user uploads a resume
+  // --- Handlers ---
   const handleResumeUpload = (file) => {
     setResumeFile(file);
-    setResumeFileCache(file); // cache for regeneration
+    setResumeFileCache(file);
   };
 
-  // When user enters job description
   const handleJobDescriptionChange = (desc) => {
     setJobDescription(desc);
-    setJobDescriptionCache(desc); // cache for regeneration
+    setJobDescriptionCache(desc);
   };
 
   const handleGenerate = async (regenerate = false) => {
-    // Use cached values if regenerating and no new input
     const resumeToSend = resumeFile || resumeFileCache;
     const jobDescToSend = jobDescription || jobDescriptionCache;
-
     if (!resumeToSend || !jobDescToSend) {
       toast.error("Please upload a resume and enter job description.");
       return;
     }
-
     const formData = new FormData();
     formData.append('resume', resumeToSend);
     formData.append('job_description', jobDescToSend);
     formData.append('tone', selectedTone === "Custom" && customTone ? customTone : selectedTone);
     formData.append('language', language);
-
-    // Add a unique element for every generation to ensure variation
     formData.append('generation_seed', `${Date.now()}-${Math.random()}`);
-
     if (regenerate && editedLetter) {
       formData.append('edited_letter', editedLetter);
     }
-
     setLoading(true);
     try {
       const res = await axios.post('http://localhost:5000/generate-cover-letter', formData);
@@ -279,8 +261,6 @@ export default function App() {
       setCopied(false);
       setEditedLetter('');
       toast.success(regenerate ? "Cover letter regenerated!" : "Cover letter generated!");
-
-      // Always create a new history entry on (re)generate, using Gemini jobTitle and company
       const newId = Date.now();
       saveLetterToHistory(
         res.data.cover_letter,
@@ -297,7 +277,7 @@ export default function App() {
     }
   };
 
-  // Smooth scroll to output section after generation
+  // --- Scroll to output after generation ---
   const outputRef = React.useRef(null);
   useEffect(() => {
     if (coverLetter && outputRef.current) {
@@ -305,7 +285,7 @@ export default function App() {
     }
   }, [coverLetter]);
 
-  // Calculate rating after cover letter is generated
+  // --- Calculate rating after generation ---
   useEffect(() => {
     if (coverLetter && jobDescription) {
       setRating(getCoverLetterScore(jobDescription, coverLetter));
@@ -314,7 +294,7 @@ export default function App() {
     }
   }, [coverLetter, jobDescription]);
 
-  // Save to history whenever a new cover letter is generated
+  // --- Save to history on new letter ---
   useEffect(() => {
     if (coverLetter && jobDescription && currentHistoryId === null) {
       const newId = Date.now();
@@ -322,10 +302,9 @@ export default function App() {
       setCurrentHistoryId(newId);
       setHistory(getHistory());
     }
-    // eslint-disable-next-line
   }, [coverLetter]);
 
-  // Fetch job title from Gemini when jobDescription changes
+  // --- Fetch job title and company from backend ---
   useEffect(() => {
     if (jobDescription) {
       fetchJobTitle(jobDescription).then(title => {
@@ -340,7 +319,6 @@ export default function App() {
     }
   }, [jobDescription]);
 
-  // --- Only use Gemini API for job title extraction ---
   async function fetchJobTitle(jobDescription) {
     if (!jobDescription) return "";
     try {
@@ -356,7 +334,6 @@ export default function App() {
     }
   }
 
-  // Example for rendering grouped requirements
   function renderGroupedRequirements(grouped, color, icon, isMissing = false, isMatched = false) {
     return Object.entries(grouped).map(([cat, items]) => (
       <div key={cat} className="mb-2">
@@ -372,7 +349,7 @@ export default function App() {
                 isMissing
                   ? { background: "#FDECEC", borderRadius: "8px", padding: "2px 8px" }
                   : isMatched
-                  ? { color: "#3C6F4A" } // pastel dark green
+                  ? { color: "#3C6F4A" }
                   : undefined
               }
             >
@@ -384,7 +361,7 @@ export default function App() {
     ));
   }
 
-  // --- History Modal Component ---
+  // --- History Modal ---
   function HistoryModal() {
     return (
       <div className="fixed inset-0 bg-black bg-opacity-40 z-50 flex items-center justify-center">
@@ -485,6 +462,7 @@ export default function App() {
     );
   }
 
+  // --- Render ---
   return (
     <>
       <Toaster position="top-right" />
@@ -515,7 +493,6 @@ export default function App() {
             className="ml-2 sm:ml-4 p-2 rounded-full bg-gray-200 hover:bg-gray-300 dark:bg-gray-700 dark:hover:bg-gray-600 transition text-2xl shadow-md flex items-center justify-center"
             title="Languages"
             style={{ transition: "background 0.2s, transform 0.2s" }}
-            // onClick={...} // Add your language menu logic here
           >
             <IoLanguageOutline size={28} />
           </button>
@@ -529,13 +506,11 @@ export default function App() {
           </button>
         </nav>
       </header>
-
       {/* Main Layout */}
       <div
         className="main-content min-h-screen bg-gradient-to-br from-blue-100 to-blue-200 dark:from-gray-900 dark:to-gray-800 flex flex-col"
         style={{ fontFamily: "'Inter', 'Poppins', 'Roboto', sans-serif" }}
       >
-        {/* Responsive Grid: Form (left) and Output (right, now wider) */}
         <div className="flex flex-col lg:flex-row w-full max-w-[1600px] mx-auto gap-8 px-2 sm:px-4 md:px-8 py-6">
           {/* Left: Form */}
           <section className="w-full lg:w-[46%] flex flex-col justify-center items-center">
@@ -618,7 +593,7 @@ export default function App() {
                         className="underline cursor-pointer"
                         onClick={() => setJobTitleEdit(true)}
                       >
-                        click to edit if it’s not right
+                        click to edit if it's not right
                       </span>
                     </span>
                   </div>
@@ -635,7 +610,6 @@ export default function App() {
                       className="bg-green-600 text-white px-3 py-1 rounded"
                       onClick={() => {
                         setJobTitleEdit(false);
-                        // If editing the current letter, update its job title in history
                         if (currentHistoryId) {
                           saveLetterToHistory(
                             coverLetter,
@@ -658,7 +632,7 @@ export default function App() {
                         className="underline cursor-pointer"
                         onClick={() => setCompanyNameEdit(true)}
                       >
-                        click to edit if it’s not right
+                        click to edit if it's not right
                       </span>
                     </span>
                   </div>
@@ -675,7 +649,6 @@ export default function App() {
                       className="bg-yellow-600 text-white px-3 py-1 rounded"
                       onClick={() => {
                         setCompanyNameEdit(false);
-                        // If editing the current letter, update its company name in history
                         if (currentHistoryId) {
                           saveLetterToHistory(
                             coverLetter,
@@ -737,13 +710,11 @@ export default function App() {
               </button>
             </div>
           </section>
-
           {/* Divider for desktop, hidden on mobile */}
           <div className="hidden lg:flex flex-col justify-center items-center px-2">
             <div className="my-8 w-px h-[80%] bg-gray-200 dark:bg-gray-700 rounded-full" />
           </div>
-
-          {/* Right: Output (now much wider) */}
+          {/* Right: Output */}
           <section
             ref={outputRef}
             className="w-full lg:w-[54%] flex flex-col justify-center items-center"
@@ -767,7 +738,6 @@ export default function App() {
                           fontSize: "1.1rem"
                         }}
                       />
-                      {/* Collapsed, scrollable previous version */}
                       {prevLetter && (
                         <div className="mt-4 text-sm text-gray-500">
                           <span className="font-semibold" style={{ fontSize: "1.1em" }}>Previous version:</span>
@@ -819,7 +789,7 @@ export default function App() {
                           fontFamily: "inherit",
                           direction: language === "Arabic" ? "rtl" : "ltr",
                           textAlign: language === "Arabic" ? "right" : "left",
-                          color: dark ? "#fff" : "#222" // Make text white in dark mode, dark in light mode
+                          color: dark ? "#fff" : "#222"
                         }}
                       >
                         {highlightKeywords(coverLetter, keywords)}
@@ -847,7 +817,6 @@ export default function App() {
                             <MdExpandMore size={22} />
                           )}
                         </button>
-                        {/* Edit Icon Button only */}
                         <button
                           className="mt-2 ml-2 text-blue-600 underline text-2xl flex items-center transition"
                           onClick={() => {
@@ -887,10 +856,9 @@ export default function App() {
                       <div className="flex items-center gap-2 mb-2">
                         <MdInfoOutline className="text-blue-500" />
                         <span className="text-sm text-gray-700 dark:text-gray-200">
-                          Matched keywords are found in your resume and the job post. Missing ones are what employers might expect but don’t appear in your resume.
+                          Matched keywords are found in your resume and the job post. Missing ones are what employers might expect but don't appear in your resume.
                         </span>
                       </div>
-                      {/* Progress Bar */}
                       <div className="w-full mb-2">
                         <div className="h-3 w-full bg-gray-200 dark:bg-gray-800 rounded-full overflow-hidden">
                           <div
@@ -907,7 +875,6 @@ export default function App() {
                         <div className="text-xs text-right text-gray-500 mt-1">{jobFitScore.score}% match</div>
                       </div>
                       <div className="flex flex-col sm:flex-row gap-4">
-                        {/* Matched */}
                         <div className="flex-1 min-w-[120px]">
                           <div className="flex items-center gap-1 font-semibold text-green-600 mb-1">
                             <MdCheckCircle className="text-green-500" /> Matched Keywords
@@ -926,7 +893,6 @@ export default function App() {
                             )}
                           </div>
                         </div>
-                        {/* Missing */}
                         <div className="flex-1 min-w-[120px]">
                           <div className="flex items-center gap-1 font-semibold text-red-600 mb-1">
                             <MdErrorOutline className="text-red-500" /> Missing Keywords
@@ -954,10 +920,9 @@ export default function App() {
                       <div className="flex items-center gap-2 mb-2">
                         <MdInfoOutline className="text-blue-500" />
                         <span className="text-sm text-gray-700 dark:text-gray-200">
-                          Matched requirements are found in your resume and the job post. Missing ones are what employers might expect but don’t appear in your resume.
+                          Matched requirements are found in your resume and the job post. Missing ones are what employers might expect but don't appear in your resume.
                         </span>
                       </div>
-                      {/* Progress Bar */}
                       <div className="w-full mb-2">
                         <div className="h-3 w-full bg-gray-200 dark:bg-gray-800 rounded-full overflow-hidden">
                           <div
@@ -974,23 +939,21 @@ export default function App() {
                         <div className="text-xs text-right text-gray-500 mt-1">{jobFitScore.score}% match</div>
                       </div>
                       <div className="flex flex-col sm:flex-row gap-4">
-                        {/* Matched */}
                         <div className="flex-1 min-w-[120px] max-h-40 overflow-y-auto pr-1">
                           {renderGroupedRequirements(
                             jobFitScore.requirements.matched,
                             "text-green-700",
                             <MdCheckCircle className="text-green-400" />,
-                            false, // isMissing
-                            true   // isMatched
+                            false,
+                            true
                           )}
                         </div>
-                        {/* Missing */}
                         <div className="flex-1 min-w-[120px] max-h-40 overflow-y-auto pr-1">
                           {renderGroupedRequirements(
                             jobFitScore.requirements.missing,
                             "text-red-700",
                             <MdErrorOutline className="text-red-400" />,
-                            true // isMissing
+                            true
                           )}
                         </div>
                       </div>
@@ -1029,22 +992,21 @@ export default function App() {
             </div>
           </section>
         </div>
-        {/* Divider for mobile/tablet */}
         <div className="lg:hidden my-6 w-full flex items-center">
           <hr className="flex-grow border-t border-gray-300 dark:border-gray-700" />
         </div>
       </div>
-
       {/* Footer */}
       <footer className="app-footer dark:app-footer-dark">
         © 2025 Coverly.ai. All rights reserved.
       </footer>
-
       {/* History Modal */}
       {historyOpen && <HistoryModal />}
     </>
   );
 }
+
+// --- Local Storage Helpers ---
 
 function getHistory() {
   return JSON.parse(localStorage.getItem("coverLetterHistory") || "[]");
@@ -1064,11 +1026,10 @@ function deleteLetterFromHistory(id) {
   localStorage.setItem("coverLetterHistory", JSON.stringify(history.filter(e => e.id !== id)));
 }
 
-function downloadLetterAsPDF(letter, name = "cover-letter.pdf", jobTitle = "", company = "") {
-  // Use the provided name (from history/rename) if available
-  let fileName = name && name.trim() ? name.trim() : undefined;
+// --- PDF Download Helper ---
 
-  // Fallback to default naming if no name provided
+function downloadLetterAsPDF(letter, name = "cover-letter.pdf", jobTitle = "", company = "") {
+  let fileName = name && name.trim() ? name.trim() : undefined;
   if (!fileName) {
     const dateStr = new Date().toISOString().slice(0, 10);
     const clean = str =>
@@ -1077,29 +1038,19 @@ function downloadLetterAsPDF(letter, name = "cover-letter.pdf", jobTitle = "", c
         .slice(0, 30);
     fileName = `CoverLetter_${clean(jobTitle) || "Custom"}_${clean(company) || "Custom"}_${dateStr}`;
   }
-
-  // Ensure .pdf extension
   if (!fileName.toLowerCase().endsWith(".pdf")) {
     fileName += ".pdf";
   }
-
-  // --- Improved PDF formatting ---
   const doc = new jsPDF({
     unit: "pt",
     format: "a4"
   });
-
-  // Set margins (1 inch = 72pt)
   const margin = 72;
   const pageWidth = doc.internal.pageSize.getWidth();
   const pageHeight = doc.internal.pageSize.getHeight();
   const usableWidth = pageWidth - margin * 2;
-
-  // Set font to Times or Arial, 12pt
   doc.setFont("times", "normal");
   doc.setFontSize(12);
-
-  // Header (Name/Contact/Job Title)
   let y = margin;
   if (company || jobTitle) {
     doc.setFont("times", "bold");
@@ -1116,13 +1067,8 @@ function downloadLetterAsPDF(letter, name = "cover-letter.pdf", jobTitle = "", c
     }
     y += 8;
   }
-
-  // Line spacing
   const lineSpacing = 1.3;
-  // Split text into lines that fit the usable width
   const lines = doc.splitTextToSize(letter, usableWidth);
-
-  // Write lines with line spacing, add pages as needed
   for (let i = 0; i < lines.length; i++) {
     if (y > pageHeight - margin) {
       doc.addPage();
@@ -1131,6 +1077,5 @@ function downloadLetterAsPDF(letter, name = "cover-letter.pdf", jobTitle = "", c
     doc.text(lines[i], margin, y);
     y += 12 * lineSpacing;
   }
-
   doc.save(fileName);
 }

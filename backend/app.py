@@ -25,7 +25,6 @@ genai.configure(api_key=GENAI_API_KEY)
 def generate_cover_letter():
     """
     Flask route to generate a cover letter based on the uploaded resume and job description.
-
     Returns:
         JSON response containing the generated cover letter and job-fit score.
     """
@@ -114,10 +113,8 @@ Job Description:
         def group_by_category(items):
             """
             Groups a list of (category, requirement) tuples by category.
-
             Args:
                 items (list): List of (category, requirement) tuples.
-
             Returns:
                 dict: Dictionary grouped by category.
             """
@@ -163,7 +160,7 @@ Job Description:
         # Prepare prompt for cover letter generation
         if edited_letter:
             prompt = f"""
-Here’s a slightly edited version of the previous cover letter. Improve it while keeping the same tone and structure, and write it in {language}.
+Here's a slightly edited version of the previous cover letter. Improve it while keeping the same tone and structure, and write it in {language}.
 
 Resume:
 {resume_text}
