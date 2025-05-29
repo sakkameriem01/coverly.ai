@@ -1,16 +1,17 @@
 // Smart Cover Letter Generator - Frontend (React + Tailwind)
 
-
 import React, { useState, useEffect } from "react";
 import axios from "axios";
 import { Toaster, toast } from "react-hot-toast";
 import { BiCopy } from "react-icons/bi";
-import { MdOutlineDone, MdOutlineDarkMode, MdOutlineLightMode, MdExpandMore, MdOutlineEdit, MdCheckCircle, MdErrorOutline, MdInfoOutline } from "react-icons/md";
+import { MdOutlineDone, MdOutlineDarkMode, MdOutlineLightMode, MdExpandMore, MdOutlineEdit, MdCheckCircle, MdErrorOutline, MdInfoOutline, MdOutlineDelete, MdDriveFileRenameOutline, MdOutlineFileDownload } from "react-icons/md";
 import { LuBrain } from "react-icons/lu";
 import { BsCircleFill } from "react-icons/bs";
 import { IoLanguageOutline } from "react-icons/io5";
 import { FaStar } from "react-icons/fa";
-import './App.css'; 
+import jsPDF from "jspdf"; // npm install jspdf
+import { LuHistory } from "react-icons/lu";
+import './App.css';
 
 // Utility: Extract top N keywords from job description
 function extractKeywords(text, topN = 8) {
@@ -120,7 +121,6 @@ const ICONS = {
   red: <BsCircleFill className="text-red-500 inline" size={18} />
 };
 
-// Add this above your App() function or with other constants
 const LANGUAGE_OPTIONS = [
   { value: "English", label: "English", icon: "🇺🇸" },
   { value: "French", label: "Français", icon: "🇫🇷" },
@@ -160,6 +160,41 @@ function getCoverLetterScore(jobDescription, coverLetter) {
   return { score: percent, stars, message };
 }
 
+// --- Add Gemini-powered company name extraction helper ---
+async function fetchCompanyName(jobDescription) {
+  if (!jobDescription) return "";
+  try {
+    const res = await fetch("http://localhost:5000/extract-company-name", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ job_description: jobDescription }),
+    });
+    const data = await res.json();
+    return data.company_name || "";
+  } catch {
+    return "";
+  }
+}
+
+// --- Update saveLetterToHistory to use Gemini-powered jobTitle and company ---
+function saveLetterToHistory(letter, jobDescription, meta = {}) {
+  const history = JSON.parse(localStorage.getItem("coverLetterHistory") || "[]");
+  const entry = {
+    id: meta.id || Date.now(),
+    name: meta.name || `Cover Letter ${new Date().toLocaleString()}`,
+    letter,
+    jobDescription,
+    created: meta.created || new Date().toISOString(),
+    tone: meta.tone || meta.selectedTone || "Formal",
+    jobType: meta.jobType || "N/A",
+    company: meta.company || "",
+  };
+  const idx = history.findIndex(e => e.id === entry.id);
+  if (idx !== -1) history[idx] = entry;
+  else history.unshift(entry);
+  localStorage.setItem("coverLetterHistory", JSON.stringify(history));
+}
+
 export default function App() {
   const [resumeFile, setResumeFile] = useState(null);
   const [resumeFileCache, setResumeFileCache] = useState(null); // cache for regeneration
@@ -178,6 +213,15 @@ export default function App() {
   const [editedLetter, setEditedLetter] = useState('');
   const [prevLetter, setPrevLetter] = useState('');
   const [rating, setRating] = useState(null);
+  const [historyOpen, setHistoryOpen] = useState(false);
+  const [history, setHistory] = useState(getHistory());
+  const [renameId, setRenameId] = useState(null);
+  const [renameValue, setRenameValue] = useState("");
+  const [currentHistoryId, setCurrentHistoryId] = useState(null);
+  const [jobTitle, setJobTitle] = useState("");
+  const [jobTitleEdit, setJobTitleEdit] = useState(false);
+  const [companyName, setCompanyName] = useState("");
+  const [companyNameEdit, setCompanyNameEdit] = useState(false);
 
   // Extract keywords whenever jobDescription changes
   const keywords = extractKeywords(jobDescription);
@@ -235,6 +279,16 @@ export default function App() {
       setCopied(false);
       setEditedLetter('');
       toast.success(regenerate ? "Cover letter regenerated!" : "Cover letter generated!");
+
+      // Always create a new history entry on (re)generate, using Gemini jobTitle and company
+      const newId = Date.now();
+      saveLetterToHistory(
+        res.data.cover_letter,
+        jobDescToSend,
+        { tone: selectedTone, jobType: jobTitle, company: companyName, id: newId }
+      );
+      setCurrentHistoryId(newId);
+      setHistory(getHistory());
     } catch (err) {
       console.error(err);
       toast.error("Something went wrong.");
@@ -260,6 +314,48 @@ export default function App() {
     }
   }, [coverLetter, jobDescription]);
 
+  // Save to history whenever a new cover letter is generated
+  useEffect(() => {
+    if (coverLetter && jobDescription && currentHistoryId === null) {
+      const newId = Date.now();
+      saveLetterToHistory(coverLetter, jobDescription, { tone: selectedTone, jobType: jobTitle, company: companyName, id: newId });
+      setCurrentHistoryId(newId);
+      setHistory(getHistory());
+    }
+    // eslint-disable-next-line
+  }, [coverLetter]);
+
+  // Fetch job title from Gemini when jobDescription changes
+  useEffect(() => {
+    if (jobDescription) {
+      fetchJobTitle(jobDescription).then(title => {
+        setJobTitle(title);
+      });
+      fetchCompanyName(jobDescription).then(name => {
+        setCompanyName(name);
+      });
+    } else {
+      setJobTitle("");
+      setCompanyName("");
+    }
+  }, [jobDescription]);
+
+  // --- Only use Gemini API for job title extraction ---
+  async function fetchJobTitle(jobDescription) {
+    if (!jobDescription) return "";
+    try {
+      const res = await fetch("http://localhost:5000/extract-job-title", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ job_description: jobDescription }),
+      });
+      const data = await res.json();
+      return data.job_title || "";
+    } catch {
+      return "";
+    }
+  }
+
   // Example for rendering grouped requirements
   function renderGroupedRequirements(grouped, color, icon) {
     return Object.entries(grouped).map(([cat, items]) => (
@@ -278,42 +374,151 @@ export default function App() {
     ));
   }
 
+  // --- History Modal Component ---
+  function HistoryModal() {
+    return (
+      <div className="fixed inset-0 bg-black bg-opacity-40 z-50 flex items-center justify-center">
+        <div className="bg-white dark:bg-gray-900 rounded-2xl shadow-xl max-w-2xl w-full p-6 relative">
+          <button
+            className="absolute top-3 right-4 text-2xl text-gray-400 hover:text-blue-600"
+            onClick={() => setHistoryOpen(false)}
+          >×</button>
+          <h2 className="text-xl font-bold mb-4 text-blue-700">Cover Letter History</h2>
+          {history.length === 0 ? (
+            <div className="text-gray-500 text-center">No saved cover letters yet.</div>
+          ) : (
+            <ul className="space-y-4 max-h-[60vh] overflow-y-auto">
+              {history.map(entry => (
+                <li key={entry.id} className="border rounded-lg p-4 bg-gray-50 dark:bg-gray-800 flex flex-col sm:flex-row sm:items-center gap-2">
+                  <div className="flex-1">
+                    <div className="flex flex-col sm:flex-row sm:items-center gap-2 mb-1">
+                      <span className="font-semibold">{entry.name}</span>
+                      <span className="text-xs text-gray-500 ml-2">{new Date(entry.created).toLocaleString()}</span>
+                    </div>
+                    <div className="flex gap-3 mb-1 text-xs">
+                      <span className="px-2 py-1 bg-blue-100 text-blue-700 rounded">{entry.tone}</span>
+                      <span className="px-2 py-1 bg-green-100 text-green-700 rounded">{entry.jobType}</span>
+                      {entry.company && (
+                        <span className="px-2 py-1 bg-yellow-100 text-yellow-700 rounded">{entry.company}</span>
+                      )}
+                    </div>
+                    <div className="text-xs text-gray-700 dark:text-gray-200 italic mb-1">
+                      {entry.letter.slice(0, 80).replace(/\n/g, " ")}{entry.letter.length > 80 ? "..." : ""}
+                    </div>
+                  </div>
+                  <div className="flex flex-col gap-1 sm:items-end">
+                    {renameId === entry.id ? (
+                      <div className="flex gap-2 items-center mb-2">
+                        <input
+                          className="border rounded px-2 py-1 flex-1"
+                          value={renameValue}
+                          onChange={e => setRenameValue(e.target.value)}
+                        />
+                        <button
+                          className="bg-blue-600 text-white px-3 py-1 rounded"
+                          onClick={() => {
+                            renameLetterInHistory(entry.id, renameValue);
+                            setRenameId(null);
+                            setHistory(getHistory());
+                          }}
+                        >Save</button>
+                        <button
+                          className="text-gray-500 px-2"
+                          onClick={() => setRenameId(null)}
+                        >Cancel</button>
+                      </div>
+                    ) : (
+                      <div className="flex gap-2">
+                        <button
+                          className="text-blue-600 hover:bg-blue-100 rounded-full p-1 transition"
+                          onClick={() => {
+                            setRenameId(entry.id);
+                            setRenameValue(entry.name);
+                          }}
+                          title="Rename"
+                        >
+                          <MdDriveFileRenameOutline size={22} />
+                        </button>
+                        <button
+                          className="text-red-600 hover:bg-red-100 rounded-full p-1 transition"
+                          onClick={() => {
+                            deleteLetterFromHistory(entry.id);
+                            setHistory(getHistory());
+                          }}
+                          title="Delete"
+                        >
+                          <MdOutlineDelete size={22} />
+                        </button>
+                        <button
+                          className="text-green-600 hover:bg-green-100 rounded-full p-1 transition"
+                          onClick={() =>
+                            downloadLetterAsPDF(
+                              entry.letter,
+                              undefined,
+                              entry.jobType,
+                              entry.company
+                            )
+                          }
+                          title="Download as PDF"
+                        >
+                          <MdOutlineFileDownload size={22} />
+                        </button>
+                      </div>
+                    )}
+                  </div>
+                </li>
+              ))}
+            </ul>
+          )}
+        </div>
+      </div>
+    );
+  }
+
   return (
     <>
       <Toaster position="top-right" />
       {/* Header */}
       <header
-  className="fixed top-0 left-0 w-full z-50 flex items-center shadow-lg backdrop-blur-md app-header"
->
-  <span className="flex items-center gap-4">
-    <img
-      src="/logo.png"
-      alt="COVRLY.AI Logo"
-      className="h-[110px] w-auto"
-      style={{ maxHeight: 110 }}
-    />
-    <span className="text-2xl sm:text-3xl font-bold tracking-tight text-blue-900 dark:text-white">
-    </span>
-  </span>
-  <nav className="ml-auto flex gap-4 sm:gap-6 items-center">
-    <button
-      onClick={() => setDark(d => !d)}
-      className="ml-2 sm:ml-4 p-2 rounded-full bg-blue-700 hover:bg-blue-600 dark:bg-gray-800 dark:hover:bg-gray-700 transition text-2xl shadow-md hover:scale-110 duration-200 flex items-center justify-center"
-      title={dark ? "Light mode" : "Dark mode"}
-      style={{ transition: "background 0.2s, transform 0.2s" }}
-    >
-      {dark ? <MdOutlineLightMode size={32} /> : <MdOutlineDarkMode size={32} />}
-    </button>
-    <button
-      className="ml-2 sm:ml-4 p-2 rounded-full bg-gray-200 hover:bg-gray-300 dark:bg-gray-700 dark:hover:bg-gray-600 transition text-2xl shadow-md flex items-center justify-center"
-      title="Languages"
-      style={{ transition: "background 0.2s, transform 0.2s" }}
-      // onClick={...} // Add your language menu logic here
-    >
-      <IoLanguageOutline size={28} />
-    </button>
-  </nav>
-</header>
+        className="fixed top-0 left-0 w-full z-50 flex items-center shadow-lg backdrop-blur-md app-header"
+      >
+        <span className="flex items-center gap-4">
+          <img
+            src="/logo.png"
+            alt="COVRLY.AI Logo"
+            className="h-[110px] w-auto"
+            style={{ maxHeight: 110 }}
+          />
+          <span className="text-2xl sm:text-3xl font-bold tracking-tight text-blue-900 dark:text-white">
+          </span>
+        </span>
+        <nav className="ml-auto flex gap-4 sm:gap-6 items-center">
+          <button
+            onClick={() => setDark(d => !d)}
+            className="ml-2 sm:ml-4 p-2 rounded-full bg-gray-200 hover:bg-gray-300 dark:bg-gray-700 dark:hover:bg-gray-600 transition text-2xl shadow-md hover:scale-110 duration-200 flex items-center justify-center"
+            title={dark ? "Light mode" : "Dark mode"}
+            style={{ transition: "background 0.2s, transform 0.2s" }}
+          >
+            {dark ? <MdOutlineLightMode size={32} /> : <MdOutlineDarkMode size={32} />}
+          </button>
+          <button
+            className="ml-2 sm:ml-4 p-2 rounded-full bg-gray-200 hover:bg-gray-300 dark:bg-gray-700 dark:hover:bg-gray-600 transition text-2xl shadow-md flex items-center justify-center"
+            title="Languages"
+            style={{ transition: "background 0.2s, transform 0.2s" }}
+            // onClick={...} // Add your language menu logic here
+          >
+            <IoLanguageOutline size={28} />
+          </button>
+          <button
+            className="ml-2 sm:ml-4 p-2 rounded-full bg-gray-200 hover:bg-gray-300 dark:bg-gray-700 dark:hover:bg-gray-600 transition text-2xl shadow-md flex items-center justify-center"
+            title="History"
+            style={{ transition: "background 0.2s, transform 0.2s" }}
+            onClick={() => setHistoryOpen(true)}
+          >
+            <LuHistory size={28} />
+          </button>
+        </nav>
+      </header>
 
       {/* Main Layout */}
       <div
@@ -396,6 +601,86 @@ export default function App() {
                     {jobDescription.length} characters
                   </span>
                 </div>
+                {jobTitle && !jobTitleEdit && (
+                  <div className="my-2 p-2 bg-blue-50 border border-blue-200 rounded text-blue-800 text-sm flex items-center gap-2">
+                    <span>
+                      We detected this job title: <b>{jobTitle}</b> —{" "}
+                      <span
+                        className="underline cursor-pointer"
+                        onClick={() => setJobTitleEdit(true)}
+                      >
+                        click to edit if it’s not right
+                      </span>
+                    </span>
+                  </div>
+                )}
+                {jobTitleEdit && (
+                  <div className="my-2 flex items-center gap-2">
+                    <input
+                      className="border rounded px-2 py-1"
+                      value={jobTitle}
+                      onChange={e => setJobTitle(e.target.value)}
+                      maxLength={50}
+                    />
+                    <button
+                      className="bg-blue-600 text-white px-3 py-1 rounded"
+                      onClick={() => {
+                        setJobTitleEdit(false);
+                        // If editing the current letter, update its job title in history
+                        if (currentHistoryId) {
+                          saveLetterToHistory(
+                            coverLetter,
+                            jobDescription,
+                            { tone: selectedTone, jobType: jobTitle, company: companyName, id: currentHistoryId }
+                          );
+                          setHistory(getHistory());
+                        }
+                      }}
+                    >
+                      Confirm
+                    </button>
+                  </div>
+                )}
+                {companyName && !companyNameEdit && (
+                  <div className="my-2 p-2 bg-yellow-50 border border-yellow-200 rounded text-yellow-800 text-sm flex items-center gap-2">
+                    <span>
+                      We detected this company: <b>{companyName}</b> —{" "}
+                      <span
+                        className="underline cursor-pointer"
+                        onClick={() => setCompanyNameEdit(true)}
+                      >
+                        click to edit if it’s not right
+                      </span>
+                    </span>
+                  </div>
+                )}
+                {companyNameEdit && (
+                  <div className="my-2 flex items-center gap-2">
+                    <input
+                      className="border rounded px-2 py-1"
+                      value={companyName}
+                      onChange={e => setCompanyName(e.target.value)}
+                      maxLength={50}
+                    />
+                    <button
+                      className="bg-yellow-600 text-white px-3 py-1 rounded"
+                      onClick={() => {
+                        setCompanyNameEdit(false);
+                        // If editing the current letter, update its company name in history
+                        if (currentHistoryId) {
+                          saveLetterToHistory(
+                            coverLetter,
+                            jobDescription,
+                            { tone: selectedTone, jobType: jobTitle, company: companyName, id: currentHistoryId }
+                          );
+                          setHistory(getHistory());
+                        }
+                      }}
+                    >
+                      Confirm
+                    </button>
+                  </div>
+                )}
               </div>
               {/* Language Selector */}
               <div className="mb-4">
@@ -466,17 +751,26 @@ export default function App() {
                       <textarea
                         value={editedLetter}
                         onChange={e => setEditedLetter(e.target.value)}
-                        className="w-full min-h-[200px] border rounded-lg p-3 text-sm sm:text-base bg-gray-50 dark:bg-gray-800 dark:text-gray-100 focus:ring-2 focus:ring-blue-300 transition"
+                        className="w-full min-h-[350px] sm:min-h-[400px] border rounded-lg p-3 text-sm sm:text-base bg-gray-50 dark:bg-gray-800 dark:text-gray-100 focus:ring-2 focus:ring-blue-300 transition"
                         style={{
                           direction: language === "Arabic" ? "rtl" : "ltr",
-                          textAlign: language === "Arabic" ? "right" : "left"
+                          textAlign: language === "Arabic" ? "right" : "left",
+                          fontSize: "1.1rem"
                         }}
                       />
-                      {/* No cancel or regenerate button */}
+                      {/* Collapsed, scrollable previous version */}
                       {prevLetter && (
-                        <div className="mt-4 text-xs text-gray-500">
-                          <span className="font-semibold">Previous version:</span>
-                          <pre className="whitespace-pre-wrap bg-gray-100 dark:bg-gray-800 rounded p-2 mt-1 border">{prevLetter}</pre>
+                        <div className="mt-4 text-sm text-gray-500">
+                          <span className="font-semibold" style={{ fontSize: "1.1em" }}>Previous version:</span>
+                          <pre
+                            className="whitespace-pre-wrap bg-gray-100 dark:bg-gray-800 rounded p-2 mt-1 border max-h-40 overflow-y-auto"
+                            style={{
+                              fontSize: "1.08em",
+                              fontFamily: "'Inter', 'Poppins', 'Roboto', sans-serif"
+                            }}
+                          >
+                            {prevLetter}
+                          </pre>
                         </div>
                       )}
                       <div className="flex justify-center gap-3 mt-4">
@@ -486,6 +780,14 @@ export default function App() {
                             setCoverLetter(editedLetter);
                             setPrevLetter(coverLetter);
                             setEditMode(false);
+                            if (currentHistoryId) {
+                              saveLetterToHistory(
+                                editedLetter,
+                                jobDescription,
+                                { tone: selectedTone, jobType: jobTitle, company: companyName, id: currentHistoryId }
+                              );
+                              setHistory(getHistory());
+                            }
                           }}
                         >
                           Save
@@ -554,9 +856,11 @@ export default function App() {
                     <div
                       className={`mt-4 mx-auto max-w-lg w-full rounded-xl border-2 p-5 flex flex-col items-center text-center shadow transition bg-white dark:bg-gray-900 ${SCORE_COLORS[jobFitScore.border_color]}`}
                     >
-                      <div className="text-3xl mb-2">{jobFitScore.match_icon}</div>
-                      <div className="text-lg font-bold mb-1">Job-Fit Score:</div>
-                      <div className="text-4xl font-extrabold mb-1">{jobFitScore.score}%</div>
+                      <div className="flex items-center justify-center gap-2 mb-2">
+                        <span className="text-3xl">{jobFitScore.match_icon}</span>
+                        <span className="text-lg font-bold">Job-Fit Score:</span>
+                        <span className="text-4xl font-extrabold ml-2">{jobFitScore.score}%</span>
+                      </div>
                       <div className="text-base font-semibold mb-2">{jobFitScore.match_level}</div>
                       {jobFitScore.explanation && Array.isArray(jobFitScore.explanation) && (
                         <>
@@ -714,6 +1018,94 @@ export default function App() {
       <footer className="app-footer dark:app-footer-dark">
         © 2025 Coverly.ai. All rights reserved.
       </footer>
+
+      {/* History Modal */}
+      {historyOpen && <HistoryModal />}
     </>
   );
+}
+
+function getHistory() {
+  return JSON.parse(localStorage.getItem("coverLetterHistory") || "[]");
+}
+
+function renameLetterInHistory(id, newName) {
+  const history = getHistory();
+  const idx = history.findIndex(e => e.id === id);
+  if (idx !== -1) {
+    history[idx].name = newName;
+    localStorage.setItem("coverLetterHistory", JSON.stringify(history));
+  }
+}
+
+function deleteLetterFromHistory(id) {
+  const history = getHistory();
+  localStorage.setItem("coverLetterHistory", JSON.stringify(history.filter(e => e.id !== id)));
+}
+
+function downloadLetterAsPDF(letter, name = "cover-letter.pdf", jobTitle = "", company = "") {
+  // Format date as YYYY-MM-DD
+  const dateStr = new Date().toISOString().slice(0, 10);
+  const clean = str =>
+    (str || "")
+      .replace(/[^a-zA-Z0-9]+/g, "")
+      .slice(0, 30);
+
+  let fileName = `📄 CoverLetter_`;
+  if (jobTitle || company) {
+    fileName += `${clean(jobTitle) || "Custom"}_${clean(company) || "Custom"}_${dateStr}.pdf`;
+  } else {
+    fileName += `Custom_${dateStr}.pdf`;
+  }
+
+  // --- Improved PDF formatting ---
+  const doc = new jsPDF({
+    unit: "pt",
+    format: "a4"
+  });
+
+  // Set margins (1 inch = 72pt)
+  const margin = 72;
+  const pageWidth = doc.internal.pageSize.getWidth();
+  const pageHeight = doc.internal.pageSize.getHeight();
+  const usableWidth = pageWidth - margin * 2;
+
+  // Set font to Times or Arial, 12pt
+  doc.setFont("times", "normal");
+  doc.setFontSize(12);
+
+  // Header (Name/Contact/Job Title)
+  let y = margin;
+  if (company || jobTitle) {
+    doc.setFont("times", "bold");
+    doc.setFontSize(15);
+    doc.text(jobTitle || "Cover Letter", margin, y);
+    doc.setFont("times", "normal");
+    doc.setFontSize(12);
+    y += 22;
+    if (company) {
+      doc.setFont("times", "italic");
+      doc.text(company, margin, y);
+      doc.setFont("times", "normal");
+      y += 18;
+    }
+    y += 8;
+  }
+
+  // Line spacing
+  const lineSpacing = 1.3;
+  // Split text into lines that fit the usable width
+  const lines = doc.splitTextToSize(letter, usableWidth);
+
+  // Write lines with line spacing, add pages as needed
+  for (let i = 0; i < lines.length; i++) {
+    if (y > pageHeight - margin) {
+      doc.addPage();
+      y = margin;
+    }
+    doc.text(lines[i], margin, y);
+    y += 12 * lineSpacing;
+  }
+
+  doc.save(fileName);
 }

@@ -211,5 +211,61 @@ Job Description:
         print(e)
         return jsonify({'error': 'Failed to generate cover letter'}), 500
 
+@app.route('/extract-job-title', methods=['POST'])
+def extract_job_title():
+    """
+    Extract the most accurate and concise job title from the job description using Gemini API.
+    Returns: JSON with 'job_title'
+    """
+    data = request.get_json()
+    job_description = data.get('job_description', '')
+    if not job_description:
+        return jsonify({'job_title': ''})
+
+    try:
+        model = genai.GenerativeModel('models/gemini-1.5-flash-latest')
+        prompt = (
+            "Based on this job description, what is the most accurate and concise job title for this position? "
+            "Just return the job title only. Limit your answer to 2–8 words. "
+            "Job Description:\n" + job_description
+        )
+        response = model.generate_content(prompt)
+        job_title = response.text.strip()
+        # Clean up: limit to 2–8 words, remove extra punctuation
+        job_title = " ".join(job_title.split()[:8]).strip(".,;:!?")
+        if len(job_title.split()) < 2:
+            return jsonify({'job_title': ''})
+        return jsonify({'job_title': job_title})
+    except Exception as e:
+        print(e)
+        return jsonify({'job_title': ''})
+
+@app.route('/extract-company-name', methods=['POST'])
+def extract_company_name():
+    """
+    Extract the most accurate and concise company name from the job description using Gemini API.
+    Returns: JSON with 'company_name'
+    """
+    data = request.get_json()
+    job_description = data.get('job_description', '')
+    if not job_description:
+        return jsonify({'company_name': ''})
+
+    try:
+        model = genai.GenerativeModel('models/gemini-1.5-flash-latest')
+        prompt = (
+            "Based on this job description, what is the most accurate and concise company name for this position? "
+            "Just return the company name only. If not found, return an empty string. "
+            "Job Description:\n" + job_description
+        )
+        response = model.generate_content(prompt)
+        company_name = response.text.strip()
+        # Clean up: limit to 2–8 words, remove extra punctuation
+        company_name = " ".join(company_name.split()[:8]).strip(".,;:!?")
+        return jsonify({'company_name': company_name})
+    except Exception as e:
+        print(e)
+        return jsonify({'company_name': ''})
+
 if __name__ == '__main__':
     app.run(debug=True)
