@@ -339,10 +339,15 @@ export default function App() {
                   e.preventDefault();
                   e.stopPropagation();
                   const file = e.dataTransfer.files[0];
-                  if (file && file.type === "application/pdf") {
+                  if (file && (
+                    file.type === "application/pdf" ||
+                    file.type === "image/png" ||
+                    file.type === "image/jpeg" ||
+                    file.type === "image/jpg"
+                  )) {
                     setResumeFile(file);
                   } else {
-                    toast.error("Please upload a PDF file.");
+                    toast.error("Please upload a PDF or image file (JPG, PNG, JPEG).");
                   }
                 }}
                 onClick={() => document.getElementById("resume-upload").click()}
@@ -351,14 +356,19 @@ export default function App() {
                 <input
                   id="resume-upload"
                   type="file"
-                  accept=".pdf"
+                  accept=".pdf, .png, .jpg, .jpeg, image/png, image/jpeg"
                   style={{ display: "none" }}
                   onChange={e => {
                     const file = e.target.files[0];
-                    if (file && file.type === "application/pdf") {
+                    if (file && (
+                      file.type === "application/pdf" ||
+                      file.type === "image/png" ||
+                      file.type === "image/jpeg" ||
+                      file.type === "image/jpg"
+                    )) {
                       setResumeFile(file);
                     } else {
-                      toast.error("Please upload a PDF file.");
+                      toast.error("Please upload a PDF or image file (JPG, PNG, JPEG).");
                     }
                   }}
                 />
@@ -367,7 +377,7 @@ export default function App() {
                   {resumeFile ? (
                     <span className="text-green-700">{resumeFile.name}</span>
                   ) : (
-                    <>Drag & drop your resume PDF here, or <span className="underline text-blue-600">browse</span></>
+                    <>Drag & drop your CV (PDF or Image) here, or <span className="underline text-blue-600">browse</span></>
                   )}
                 </span>
               </div>

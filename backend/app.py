@@ -6,6 +6,8 @@ from PyPDF2 import PdfReader
 import re
 import json
 import numpy as np
+from PIL import Image
+import pytesseract
 
 app = Flask(__name__)
 CORS(app)
@@ -131,10 +133,16 @@ def generate_cover_letter():
         return jsonify({'error': 'Missing resume or job description'}), 400
 
     try:
-        reader = PdfReader(resume_file)
         resume_text = ""
-        for page in reader.pages:
-            resume_text += page.extract_text() or ""
+        if resume_file.filename.lower().endswith('.pdf'):
+            reader = PdfReader(resume_file)
+            for page in reader.pages:
+                resume_text += page.extract_text() or ""
+        elif resume_file.filename.lower().endswith(('.png', '.jpg', '.jpeg')):
+            image = Image.open(resume_file.stream)
+            resume_text = pytesseract.image_to_string(image)
+        else:
+            return jsonify({'error': 'Unsupported file type. Please upload a PDF or image.'}), 400
 
         model = genai.GenerativeModel('models/gemini-1.5-flash-latest')
         extraction_prompt = """
@@ -282,5 +290,3 @@ Job Description:
 
 if __name__ == '__main__':
     app.run(debug=True)
-# Ensure you have the required packages installed:
-# pip install Flask flask-cors google-generativeai PyPDF2
