@@ -1,15 +1,14 @@
 import os
 from flask import Flask, request, jsonify
 from flask_cors import CORS
-from PyPDF2 import PdfReader
-import re
 import json
-import numpy as np
-from PIL import Image
-import pytesseract
 import google.generativeai as genai
 from dotenv import load_dotenv
 
+# Import modularized utilities
+from utils.text_processing import extract_keywords, normalize_requirement
+from utils.matching import is_semantic_match, education_match, education_semantic_match
+from utils.ocr import extract_text_from_pdf, extract_text_from_image
 
 load_dotenv()
 
@@ -21,178 +20,6 @@ if not GENAI_API_KEY:
     raise RuntimeError("GENAI_API_KEY not set in environment variables or .env file.")
 
 genai.configure(api_key=GENAI_API_KEY)
-
-def extract_keywords(text, top_n=20):
-    """
-    Extracts the top N keywords from the given text, excluding common stopwords.
-
-    Args:
-        text (str): The input text to extract keywords from.
-        top_n (int): Number of top keywords to return.
-
-    Returns:
-        list: List of top N keywords.
-    """
-    stopwords = set([
-        "the", "and", "for", "with", "that", "this", "from", "are", "was", "but", "not", "have", "has", "will", "can", "all", "you", "your", "our", "they", "their", "job", "role", "work", "who", "what", "when", "where", "how", "why", "a", "an", "to", "of", "in", "on", "as", "by", "at", "is", "it", "be", "or", "we"
-    ])
-    words = re.findall(r'\b\w+\b', text.lower())
-    words = [w for w in words if len(w) > 2 and w not in stopwords]
-    freq = {}
-    for w in words:
-        freq[w] = freq.get(w, 0) + 1
-    sorted_words = sorted(freq.items(), key=lambda x: x[1], reverse=True)
-    return [w for w, _ in sorted_words[:top_n]]
-
-def normalize_requirement(req):
-    """
-    Cleans and normalizes a requirement string by removing common adjectives, parentheticals, and punctuation.
-
-    Args:
-        req (str): The requirement string.
-
-    Returns:
-        str: Normalized requirement.
-    """
-    req = re.sub(r'\(.*?\)', '', req)
-    req = re.sub(r'\b(strong|proven|excellent|nice to have|preferred|required|plus|solid|good|advanced|basic|familiar|experience with|knowledge of|understanding of|ability to|must have|should have|demonstrated|hands-on|expertise in|background in|proficiency in|skills in|skills with|working with|working knowledge of|including|etc\.?)\b', '', req, flags=re.I)
-    req = re.sub(r'[-–•]', '', req)
-    req = req.strip()
-    req = re.sub(r'[.,;:]+$', '', req)
-    return req
-
-def normalize_text(text):
-    """
-    Normalizes text by converting to lowercase and removing whitespace and special characters.
-
-    Args:
-        text (str): Input text.
-
-    Returns:
-        str: Normalized text.
-    """
-    return re.sub(r'[\s\-_/]', '', text.lower())
-
-def is_semantic_match(req, resume_text, embeddings_model=None, threshold=0.78):
-    """
-    Checks if a requirement semantically matches the resume text using normalization and optional embeddings.
-
-    Args:
-        req (str): Requirement string.
-        resume_text (str): Resume text.
-        embeddings_model (optional): Embedding model for semantic similarity.
-        threshold (float): Similarity threshold.
-
-    Returns:
-        bool: True if match found, else False.
-    """
-    req_norm = normalize_text(req)
-    resume_norm = normalize_text(resume_text)
-    if req_norm in resume_norm:
-        return True
-
-    # Use embeddings if provided
-    if embeddings_model:
-        try:
-            req_emb = embeddings_model.embed_content(req)
-            resume_emb = embeddings_model.embed_content(resume_text)
-            sim = np.dot(req_emb, resume_emb) / (np.linalg.norm(req_emb) * np.linalg.norm(resume_emb))
-            if sim > threshold:
-                return True
-        except Exception:
-            pass
-
-    # Check for common abbreviations and aliases
-    ABBREVIATIONS = {
-        "machine learning": ["ml"],
-        "artificial intelligence": ["ai"],
-        "natural language processing": ["nlp"],
-        "scikit-learn": ["scikitlearn", "sklearn"],
-        "postgresql": ["postgres", "sql"],
-        "bachelor's": ["bsc", "bachelor"],
-        "master's": ["msc", "master"],
-        "internship": ["intern", "project"],
-    }
-    req_lc = req.lower()
-    for canonical, aliases in ABBREVIATIONS.items():
-        if req_lc == canonical or req_lc in aliases:
-            for alias in [canonical] + aliases:
-                if alias in resume_norm:
-                    return True
-    # Partial match for longer requirements
-    if len(req_norm) > 4 and any(req_norm in word for word in resume_norm.split()):
-        return True
-    return False
-
-def education_match(req, resume_text):
-    """
-    Checks if the education requirement matches the resume text using keywords and degree hierarchy.
-
-    Args:
-        req (str): Education requirement.
-        resume_text (str): Resume text.
-
-    Returns:
-        bool: True if match found, else False.
-    """
-    req_lc = req.lower()
-    resume_lc = resume_text.lower()
-    # Master's degree satisfies Bachelor's requirement
-    if "master" in resume_lc and "bachelor" in req_lc:
-        return True
-    FIELDS = ["computer science", "data science", "ai", "artificial intelligence"]
-    for field in FIELDS:
-        if field in req_lc and any(f in resume_lc for f in FIELDS):
-            return True
-    return False
-
-def education_semantic_match(req, resume_text, embeddings_model=None, threshold=0.78):
-    """
-    Checks if the education requirement semantically matches the resume text using degree patterns and optional embeddings.
-
-    Args:
-        req (str): Education requirement.
-        resume_text (str): Resume text.
-        embeddings_model (optional): Embedding model for semantic similarity.
-        threshold (float): Similarity threshold.
-
-    Returns:
-        bool: True if match found, else False.
-    """
-    degree_patterns = [
-        r"(bachelor[’'s]*\s*(of)?\s*(arts|science)?\s*in\s*[A-Za-z &]+)",
-        r"(master[’'s]*\s*(of)?\s*(arts|science)?\s*in\s*[A-Za-z &]+)",
-        r"(ph\.?d\.?\s*in\s*[A-Za-z &]+)",
-        r"(degree\s*in\s*[A-Za-z &]+)",
-        r"(diploma\s*in\s*[A-Za-z &]+)"
-    ]
-    resume_degrees = []
-    for pat in degree_patterns:
-        resume_degrees += re.findall(pat, resume_text, flags=re.I)
-    resume_degrees = [" ".join(tup).strip() for tup in resume_degrees if any(tup)]
-
-    if not resume_degrees:
-        return education_match(req, resume_text)
-
-    for degree in resume_degrees:
-        if normalize_text(degree) in normalize_text(req):
-            return True
-        if embeddings_model:
-            try:
-                req_emb = embeddings_model.embed_content(req)
-                deg_emb = embeddings_model.embed_content(degree)
-                sim = np.dot(req_emb, deg_emb) / (np.linalg.norm(req_emb) * np.linalg.norm(deg_emb))
-                if sim > threshold:
-                    return True
-            except Exception:
-                pass
-        req_lc = req.lower()
-        deg_lc = degree.lower()
-        FIELDS = ["computer science", "data science", "ai", "artificial intelligence", "statistics", "engineering", "mechatronics", "mathematics"]
-        for field in FIELDS:
-            if field in req_lc and field in deg_lc:
-                return True
-    return False
 
 @app.route('/generate-cover-letter', methods=['POST'])
 def generate_cover_letter():
@@ -213,15 +40,11 @@ def generate_cover_letter():
         return jsonify({'error': 'Missing resume or job description'}), 400
 
     try:
-        resume_text = ""
-        # Extract text from PDF or image using OCR
+        # Extract text from PDF or image using OCR utility functions
         if resume_file.filename.lower().endswith('.pdf'):
-            reader = PdfReader(resume_file)
-            for page in reader.pages:
-                resume_text += page.extract_text() or ""
+            resume_text = extract_text_from_pdf(resume_file)
         elif resume_file.filename.lower().endswith(('.png', '.jpg', '.jpeg')):
-            image = Image.open(resume_file.stream)
-            resume_text = pytesseract.image_to_string(image)
+            resume_text = extract_text_from_image(resume_file.stream)
         else:
             return jsonify({'error': 'Unsupported file type. Please upload a PDF or image.'}), 400
 
@@ -246,6 +69,7 @@ Job Description:
         except Exception:
             # Fallback: Try to extract lists from the text if JSON parsing fails
             requirements_json = {"skills": [], "tools": [], "certifications": [], "education": [], "experience": []}
+            import re
             for key in requirements_json.keys():
                 match = re.search(rf'"{key}"\s*:\s*\[(.*?)\]', extraction_response.text, re.DOTALL)
                 if match:
