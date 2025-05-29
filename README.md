@@ -1,24 +1,23 @@
 # Coverly.ai
-# Coverly.ai
 
-Coverly.ai is a modern web application that helps you create tailored, professional cover letters in seconds. Just upload your resume, paste a job description, select your preferred tone and language, and let AI do the rest!
 Coverly.ai is a modern web application that helps you create tailored, professional cover letters in seconds. Just upload your resume, paste a job description, select your preferred tone and language, and let AI do the rest!
 
 ![Logo](frontend/public/logo.png)
 
 ## Features
 
+- **PDF or Image Resume Upload:** Securely upload your resume in PDF or image format (JPG, PNG, JPEG).
+- **Job Description Input:** Paste the job description for the position you want to apply for.
+- **Multiple Tones & Languages:** Choose from various professional tones or define your own. Supports English, French, and Arabic.
 - **AI-Powered Cover Letter Generation:** Instantly generate a personalized cover letter based on your resume and the job description.
 - **Job-Fit Score:** See how well your resume matches the job requirements, with a detailed breakdown of matched and missing keywords/requirements.
-- **Multiple Tones & Languages:** Choose from various professional tones or define your own. Supports English, French, and Arabic.
 - **Edit & Regenerate:** Edit the generated letter and regenerate improved versions.
 - **Modern UI:** Responsive, accessible, and visually appealing interface with dark mode support.
-- **PDF Resume Upload:** Securely upload your resume in PDF format.
 
 ## Tech Stack
 
 - **Frontend:** React, Tailwind CSS, React Icons, React Hot Toast
-- **Backend:** Python, Flask, PyPDF2, Google Gemini API
+- **Backend:** Python, Flask, PyPDF2, Pillow, pytesseract, Google Gemini API
 - **Other:** CORS, REST API
 
 ## Getting Started
@@ -28,6 +27,7 @@ Coverly.ai is a modern web application that helps you create tailored, professio
 - Node.js & npm
 - Python 3.x
 - [Google Gemini API Key](https://ai.google.dev/)
+- [Tesseract OCR](https://github.com/tesseract-ocr/tesseract) (for image CV support)
 
 ### Installation
 
@@ -36,8 +36,6 @@ Coverly.ai is a modern web application that helps you create tailored, professio
 ```bash
 git clone https://github.com/yourusername/coverly.ai.git
 cd coverly.ai
-git clone https://github.com/sakkameriem01/smart-cover-letter.git
-cd smart-cover-letter
 ```
 
 #### 2. Backend Setup
@@ -45,9 +43,13 @@ cd smart-cover-letter
 ```bash
 cd backend
 python -m venv venv
-source venv/bin/activate  # On Windows: venv\Scripts\activate
+# On Windows:
+venv\Scripts\activate
+# On Mac/Linux:
+# source venv/bin/activate
 pip install -r requirements.txt
-# Set your Google Gemini API key in app.py or as an environment variable
+# Create a .env file and add your Google Gemini API key:
+# GENAI_API_KEY=your_actual_api_key_here
 python app.py
 ```
 
@@ -64,7 +66,7 @@ npm start
 
 ## Usage
 
-1. Upload your resume (PDF only).
+1. Upload your CV (PDF or Image).
 2. Paste the job description.
 3. Select your preferred tone and language.
 4. Click **Generate Cover Letter**.
@@ -74,7 +76,6 @@ npm start
 ## Screenshots
 
 ![App Screenshot](frontend/public/screenshot.png)
-
 
 ## License
 
