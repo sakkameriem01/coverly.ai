@@ -1,5 +1,7 @@
 # Coverly.ai
+# Coverly.ai
 
+Coverly.ai is a modern web application that helps you create tailored, professional cover letters in seconds. Just upload your resume, paste a job description, select your preferred tone and language, and let AI do the rest!
 Coverly.ai is a modern web application that helps you create tailored, professional cover letters in seconds. Just upload your resume, paste a job description, select your preferred tone and language, and let AI do the rest!
 
 ![Logo](frontend/public/logo.png)
@@ -32,7 +34,9 @@ Coverly.ai is a modern web application that helps you create tailored, professio
 #### 1. Clone the repository
 
 ```bash
-git clone https://github.com/yourusername/smart-cover-letter.git
+git clone https://github.com/yourusername/coverly.ai.git
+cd coverly.ai
+git clone https://github.com/sakkameriem01/smart-cover-letter.git
 cd smart-cover-letter
 ```
 
