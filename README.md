@@ -1,6 +1,6 @@
-# Smart Cover Letter Generator
+# Coverly.ai
 
-Smart Cover Letter Generator is a modern web application that helps you create tailored, professional cover letters in seconds. Just upload your resume, paste a job description, select your preferred tone and language, and let AI do the rest!
+Coverly.ai is a modern web application that helps you create tailored, professional cover letters in seconds. Just upload your resume, paste a job description, select your preferred tone and language, and let AI do the rest!
 
 ![Logo](frontend/public/logo.png)
 
@@ -16,7 +16,7 @@ Smart Cover Letter Generator is a modern web application that helps you create t
 ## Tech Stack
 
 - **Frontend:** React, Tailwind CSS, React Icons, React Hot Toast
-- **Backend:** Python, Flask, PyPDF2, Google Gemini API (Generative AI)
+- **Backend:** Python, Flask, PyPDF2, Google Gemini API
 - **Other:** CORS, REST API
 
 ## Getting Started
@@ -32,7 +32,7 @@ Smart Cover Letter Generator is a modern web application that helps you create t
 #### 1. Clone the repository
 
 ```bash
-git clone https://github.com/yourusername/smart-cover-letter.git
+git clone https://github.com/sakkameriem01/smart-cover-letter.git
 cd smart-cover-letter
 ```
 
