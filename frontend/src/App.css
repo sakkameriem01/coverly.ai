@@ -24,6 +24,18 @@
   color: white;
 }
 
+/* Add to App.css if you want to further style the footer */
+.app-footer {
+  background: rgba(240, 240, 245, 0.85);
+  color: #444;
+  font-size: 1rem;
+  letter-spacing: 0.01em;
+  border-top: 1px solid #e5e7eb;
+  width: 100%;
+  text-align: center;
+  padding: 1rem 0;
+}
+
 .App-link {
   color: #61dafb;
 }

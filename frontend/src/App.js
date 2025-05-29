@@ -6,9 +6,7 @@ import axios from "axios";
 import { Toaster, toast } from "react-hot-toast";
 import { BiCopy } from "react-icons/bi";
 import { MdOutlineDone, MdOutlineDarkMode, MdOutlineLightMode, MdExpandMore, MdOutlineEdit, MdCheckCircle, MdErrorOutline, MdInfoOutline } from "react-icons/md";
-import { BsMoon, BsSun } from "react-icons/bs"; // For moon/sun icons
 import { LuBrain } from "react-icons/lu";
-import { CheckCircle, AlertCircle, XCircle } from "react-icons/lu";
 import { BsCircleFill } from "react-icons/bs";
 import './App.css'; 
 
@@ -243,7 +241,7 @@ export default function App() {
     paddingBottom: "1.5rem",
     paddingLeft: "2rem",
     paddingRight: "2rem",
-    minHeight: "110px", // increase header height for larger logo
+    minHeight: "140px", // increase header height for larger logo
     boxSizing: "border-box",
     fontFamily: "'Inter', 'Poppins', 'Roboto', sans-serif",
     borderBottom: "1px solid #e5e7eb"
@@ -253,8 +251,8 @@ export default function App() {
     <img
       src="/logo.png"
       alt="COVRLY.AI Logo"
-      className="h-[80px] w-auto" // increase height to 80px
-      style={{ maxHeight: 80 }}
+      className="h-[110px] w-auto" // increase height to 110px
+      style={{ maxHeight: 110 }}
     />
     <span className="text-2xl sm:text-3xl font-bold tracking-tight text-blue-900">
     </span>
@@ -627,6 +625,21 @@ export default function App() {
           <hr className="flex-grow border-t border-gray-300 dark:border-gray-700" />
         </div>
       </div>
+
+      {/* Footer */}
+      <footer
+        className="w-full text-center py-4"
+        style={{
+          background: "rgba(240, 240, 245, 0.85)",
+          color: "#444",
+          fontSize: "1rem",
+          letterSpacing: "0.01em",
+          borderTop: "1px solid #e5e7eb",
+          marginTop: "auto"
+        }}
+      >
+        © 2025 MeriemSakka. All rights reserved.
+      </footer>
     </>
   );
 }
