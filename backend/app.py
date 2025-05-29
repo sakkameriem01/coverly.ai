@@ -10,13 +10,12 @@ import pytesseract
 import google.generativeai as genai
 from dotenv import load_dotenv
 
-# Load environment variables from .env file
+
 load_dotenv()
 
 app = Flask(__name__)
 CORS(app)
 
-# Get API key from environment variable
 GENAI_API_KEY = os.getenv("GENAI_API_KEY")
 if not GENAI_API_KEY:
     raise RuntimeError("GENAI_API_KEY not set in environment variables or .env file.")
@@ -24,6 +23,16 @@ if not GENAI_API_KEY:
 genai.configure(api_key=GENAI_API_KEY)
 
 def extract_keywords(text, top_n=20):
+    """
+    Extracts the top N keywords from the given text, excluding common stopwords.
+
+    Args:
+        text (str): The input text to extract keywords from.
+        top_n (int): Number of top keywords to return.
+
+    Returns:
+        list: List of top N keywords.
+    """
     stopwords = set([
         "the", "and", "for", "with", "that", "this", "from", "are", "was", "but", "not", "have", "has", "will", "can", "all", "you", "your", "our", "they", "their", "job", "role", "work", "who", "what", "when", "where", "how", "why", "a", "an", "to", "of", "in", "on", "as", "by", "at", "is", "it", "be", "or", "we"
     ])
@@ -36,6 +45,15 @@ def extract_keywords(text, top_n=20):
     return [w for w, _ in sorted_words[:top_n]]
 
 def normalize_requirement(req):
+    """
+    Cleans and normalizes a requirement string by removing common adjectives, parentheticals, and punctuation.
+
+    Args:
+        req (str): The requirement string.
+
+    Returns:
+        str: Normalized requirement.
+    """
     req = re.sub(r'\(.*?\)', '', req)
     req = re.sub(r'\b(strong|proven|excellent|nice to have|preferred|required|plus|solid|good|advanced|basic|familiar|experience with|knowledge of|understanding of|ability to|must have|should have|demonstrated|hands-on|expertise in|background in|proficiency in|skills in|skills with|working with|working knowledge of|including|etc\.?)\b', '', req, flags=re.I)
     req = re.sub(r'[-–•]', '', req)
@@ -44,14 +62,36 @@ def normalize_requirement(req):
     return req
 
 def normalize_text(text):
+    """
+    Normalizes text by converting to lowercase and removing whitespace and special characters.
+
+    Args:
+        text (str): Input text.
+
+    Returns:
+        str: Normalized text.
+    """
     return re.sub(r'[\s\-_/]', '', text.lower())
 
 def is_semantic_match(req, resume_text, embeddings_model=None, threshold=0.78):
+    """
+    Checks if a requirement semantically matches the resume text using normalization and optional embeddings.
+
+    Args:
+        req (str): Requirement string.
+        resume_text (str): Resume text.
+        embeddings_model (optional): Embedding model for semantic similarity.
+        threshold (float): Similarity threshold.
+
+    Returns:
+        bool: True if match found, else False.
+    """
     req_norm = normalize_text(req)
     resume_norm = normalize_text(resume_text)
     if req_norm in resume_norm:
         return True
 
+    # Use embeddings if provided
     if embeddings_model:
         try:
             req_emb = embeddings_model.embed_content(req)
@@ -62,6 +102,7 @@ def is_semantic_match(req, resume_text, embeddings_model=None, threshold=0.78):
         except Exception:
             pass
 
+    # Check for common abbreviations and aliases
     ABBREVIATIONS = {
         "machine learning": ["ml"],
         "artificial intelligence": ["ai"],
@@ -78,13 +119,25 @@ def is_semantic_match(req, resume_text, embeddings_model=None, threshold=0.78):
             for alias in [canonical] + aliases:
                 if alias in resume_norm:
                     return True
+    # Partial match for longer requirements
     if len(req_norm) > 4 and any(req_norm in word for word in resume_norm.split()):
         return True
     return False
 
 def education_match(req, resume_text):
+    """
+    Checks if the education requirement matches the resume text using keywords and degree hierarchy.
+
+    Args:
+        req (str): Education requirement.
+        resume_text (str): Resume text.
+
+    Returns:
+        bool: True if match found, else False.
+    """
     req_lc = req.lower()
     resume_lc = resume_text.lower()
+    # Master's degree satisfies Bachelor's requirement
     if "master" in resume_lc and "bachelor" in req_lc:
         return True
     FIELDS = ["computer science", "data science", "ai", "artificial intelligence"]
@@ -94,6 +147,18 @@ def education_match(req, resume_text):
     return False
 
 def education_semantic_match(req, resume_text, embeddings_model=None, threshold=0.78):
+    """
+    Checks if the education requirement semantically matches the resume text using degree patterns and optional embeddings.
+
+    Args:
+        req (str): Education requirement.
+        resume_text (str): Resume text.
+        embeddings_model (optional): Embedding model for semantic similarity.
+        threshold (float): Similarity threshold.
+
+    Returns:
+        bool: True if match found, else False.
+    """
     degree_patterns = [
         r"(bachelor[’'s]*\s*(of)?\s*(arts|science)?\s*in\s*[A-Za-z &]+)",
         r"(master[’'s]*\s*(of)?\s*(arts|science)?\s*in\s*[A-Za-z &]+)",
@@ -131,6 +196,12 @@ def education_semantic_match(req, resume_text, embeddings_model=None, threshold=
 
 @app.route('/generate-cover-letter', methods=['POST'])
 def generate_cover_letter():
+    """
+    Flask route to generate a cover letter based on the uploaded resume and job description.
+
+    Returns:
+        JSON response containing the generated cover letter and job-fit score.
+    """
     resume_file = request.files.get('resume')
     job_description = request.form.get('job_description')
     tone = request.form.get('tone', 'Formal')
@@ -143,6 +214,7 @@ def generate_cover_letter():
 
     try:
         resume_text = ""
+        # Extract text from PDF or image using OCR
         if resume_file.filename.lower().endswith('.pdf'):
             reader = PdfReader(resume_file)
             for page in reader.pages:
@@ -153,6 +225,7 @@ def generate_cover_letter():
         else:
             return jsonify({'error': 'Unsupported file type. Please upload a PDF or image.'}), 400
 
+        # Use Gemini model to extract requirements from job description
         model = genai.GenerativeModel('models/gemini-1.5-flash-latest')
         extraction_prompt = """
 Extract the following from this job description as a JSON object with these keys:
@@ -171,6 +244,7 @@ Job Description:
         try:
             requirements_json = json.loads(extraction_response.text)
         except Exception:
+            # Fallback: Try to extract lists from the text if JSON parsing fails
             requirements_json = {"skills": [], "tools": [], "certifications": [], "education": [], "experience": []}
             for key in requirements_json.keys():
                 match = re.search(rf'"{key}"\s*:\s*\[(.*?)\]', extraction_response.text, re.DOTALL)
@@ -178,12 +252,14 @@ Job Description:
                     items = re.findall(r'"(.*?)"', match.group(1))
                     requirements_json[key] = items
 
+        # Flatten and clean requirements
         all_requirements = []
         for cat in ["skills", "tools", "certifications", "education", "experience"]:
             clean_items = [normalize_requirement(req) for req in requirements_json.get(cat, [])]
             clean_items = [req for req in clean_items if req]
             all_requirements.extend([(cat.capitalize(), req) for req in clean_items])
 
+        # Remove duplicates
         seen = set()
         unique_requirements = []
         for cat, req in all_requirements:
@@ -195,6 +271,7 @@ Job Description:
         matched = []
         missing = []
         resume_text_full = resume_text
+        # Match requirements to resume
         for cat, req in unique_requirements:
             if cat == "Education" and education_semantic_match(req, resume_text_full):
                 matched.append((cat, req))
@@ -211,6 +288,15 @@ Job Description:
                 missing.append((cat, req))
 
         def group_by_category(items):
+            """
+            Groups a list of (category, requirement) tuples by category.
+
+            Args:
+                items (list): List of (category, requirement) tuples.
+
+            Returns:
+                dict: Dictionary grouped by category.
+            """
             grouped = {}
             for cat, req in items:
                 grouped.setdefault(cat, []).append(req)
@@ -219,12 +305,14 @@ Job Description:
         matched_grouped = group_by_category(matched)
         missing_grouped = group_by_category(missing)
 
+        # Clean up empty categories and sort
         for group in [matched_grouped, missing_grouped]:
             for cat in list(group.keys()):
                 group[cat] = sorted(set([r for r in group[cat] if r and len(r) < 120]))
                 if not group[cat]:
                     del group[cat]
 
+        # Calculate job-fit score
         total = len(unique_requirements) if unique_requirements else 1
         score = int((len(matched) / total) * 100)
         if score < 30:
@@ -248,6 +336,7 @@ Job Description:
             encouragement
         ]
 
+        # Prepare prompt for cover letter generation
         if edited_letter:
             prompt = f"""
 Here’s a slightly edited version of the previous cover letter. Improve it while keeping the same tone and structure, and write it in {language}.
@@ -276,6 +365,7 @@ Job Description:
 # Unique generation seed for variety: {generation_seed}
 """
 
+        # Generate cover letter using Gemini model
         response = model.generate_content(prompt)
 
         return jsonify({
