@@ -125,6 +125,7 @@ def generate_cover_letter():
     tone = request.form.get('tone', 'Formal')
     language = request.form.get('language', 'English')
     edited_letter = request.form.get('edited_letter', None)
+    generation_seed = request.form.get('generation_seed', None)
 
     if not resume_file or not job_description:
         return jsonify({'error': 'Missing resume or job description'}), 400
@@ -242,6 +243,8 @@ Job Description:
 
 Previous (edited) cover letter:
 {edited_letter}
+
+# Unique generation seed for variety: {generation_seed}
 """
         else:
             prompt = f"""
@@ -252,6 +255,8 @@ Resume:
 
 Job Description:
 {job_description}
+
+# Unique generation seed for variety: {generation_seed}
 """
 
         response = model.generate_content(prompt)

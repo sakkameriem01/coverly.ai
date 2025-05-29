@@ -13,18 +13,24 @@
   }
 }
 
-.App-header {
-  background-color: #282c34;
-  min-height: 100vh;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  font-size: calc(10px + 2vmin);
-  color: white;
+/* Header */
+.app-header {
+  background: rgba(255, 255, 255, 0.8);
+  padding-top: 1.5rem;
+  padding-bottom: 1.5rem;
+  padding-left: 2rem;
+  padding-right: 2rem;
+  min-height: 140px;
+  box-sizing: border-box;
+  font-family: 'Inter', 'Poppins', 'Roboto', sans-serif;
+  border-bottom: 1px solid #e5e7eb;
+}
+.dark .app-header {
+  background: #222; /* dark grey */
+  border-bottom: 1px solid #333;
 }
 
-/* Add to App.css if you want to further style the footer */
+/* Footer */
 .app-footer {
   background: rgba(240, 240, 245, 0.85);
   color: #444;
@@ -34,6 +40,71 @@
   width: 100%;
   text-align: center;
   padding: 1rem 0;
+}
+.dark .app-footer,
+.app-footer-dark {
+  background: #222;
+  color: #fff;
+  border-top: 1px solid #333;
+}
+
+/* General dark mode backgrounds and text */
+body.dark,
+html.dark {
+  background: #111 !important;
+  color: #fff;
+}
+
+.dark .bg-white {
+  background-color: #222 !important;
+}
+
+.dark .text-blue-700 {
+  color: #fff !important;
+}
+
+.dark .border-gray-200 {
+  border-color: #333 !important;
+}
+
+.dark .bg-blue-50 {
+  background-color: #222 !important;
+}
+
+.dark .text-gray-700 {
+  color: #fff !important;
+}
+
+.dark .bg-gray-50 {
+  background-color: #222 !important;
+}
+
+.dark .border-gray-300 {
+  border-color: #333 !important;
+}
+
+.dark .bg-green-50 {
+  background-color: #222 !important;
+}
+
+.dark .text-green-700 {
+  color: #fff !important;
+}
+
+.dark .bg-yellow-50 {
+  background-color: #222 !important;
+}
+
+.dark .text-yellow-700 {
+  color: #fff !important;
+}
+
+.dark .bg-red-50 {
+  background-color: #222 !important;
+}
+
+.dark .text-red-700 {
+  color: #fff !important;
 }
 
 .App-link {
@@ -60,7 +131,7 @@ html {
 }
 
 .main-content {
-  padding-top: 130px; /* Only this handles the header offset */
+  padding-top: 170px; 
 }
 
 /* Animations */
@@ -87,4 +158,36 @@ html {
     opacity: 1;
     transform: none;
   }
+}
+
+/* Inputs, textarea, select */
+.dark .bg-gray-800,
+.dark .bg-gray-900 {
+  background-color: #111 !important;
+  color: #fff !important;
+}
+.dark input,
+.dark textarea,
+.dark select {
+  background-color: #222 !important;
+  color: #fff !important;
+  border-color: #333 !important;
+}
+
+/* Progress bars */
+.dark .bg-gray-200,
+.dark .bg-gray-800 {
+  background-color: #333 !important;
+}
+
+/* Marked keywords */
+.dark mark {
+  background: #fff !important;
+  color: #111 !important;
+}
+
+/* Button hover/focus */
+.dark .bg-blue-700:hover,
+.dark .bg-blue-600:hover {
+  background-color: #444 !important;
 }

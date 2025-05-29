@@ -8,6 +8,8 @@ import { BiCopy } from "react-icons/bi";
 import { MdOutlineDone, MdOutlineDarkMode, MdOutlineLightMode, MdExpandMore, MdOutlineEdit, MdCheckCircle, MdErrorOutline, MdInfoOutline } from "react-icons/md";
 import { LuBrain } from "react-icons/lu";
 import { BsCircleFill } from "react-icons/bs";
+import { IoLanguageOutline } from "react-icons/io5";
+import { FaStar } from "react-icons/fa";
 import './App.css'; 
 
 // Utility: Extract top N keywords from job description
@@ -125,6 +127,39 @@ const LANGUAGE_OPTIONS = [
   { value: "Arabic", label: "العربية", icon: "🇸🇦" }
 ];
 
+// --- Add this helper function for rating ---
+function getCoverLetterScore(jobDescription, coverLetter) {
+  // Simple keyword overlap: count how many job keywords appear in the letter
+  const jobKeywords = extractKeywords(jobDescription, 12);
+  if (!coverLetter || !jobDescription || jobKeywords.length === 0) return { score: 0, stars: 0, message: "Not enough data to rate." };
+
+  let matchCount = 0;
+  jobKeywords.forEach(kw => {
+    const regex = new RegExp(`\\b${kw}\\b`, "i");
+    if (regex.test(coverLetter)) matchCount++;
+  });
+
+  const percent = Math.round((matchCount / jobKeywords.length) * 100);
+  let stars = 1;
+  let message = "Needs improvement. Try to include more relevant details.";
+
+  if (percent >= 90) {
+    stars = 5;
+    message = "Excellent! Your letter aligns perfectly with the job description.";
+  } else if (percent >= 70) {
+    stars = 4;
+    message = "Great match! Your letter aligns well with the job description.";
+  } else if (percent >= 50) {
+    stars = 3;
+    message = "Good start, but you can improve the match further.";
+  } else if (percent >= 30) {
+    stars = 2;
+    message = "Some relevant content, but more alignment is needed.";
+  }
+
+  return { score: percent, stars, message };
+}
+
 export default function App() {
   const [resumeFile, setResumeFile] = useState(null);
   const [resumeFileCache, setResumeFileCache] = useState(null); // cache for regeneration
@@ -142,6 +177,7 @@ export default function App() {
   const [editMode, setEditMode] = useState(false);
   const [editedLetter, setEditedLetter] = useState('');
   const [prevLetter, setPrevLetter] = useState('');
+  const [rating, setRating] = useState(null);
 
   // Extract keywords whenever jobDescription changes
   const keywords = extractKeywords(jobDescription);
@@ -182,6 +218,10 @@ export default function App() {
     formData.append('job_description', jobDescToSend);
     formData.append('tone', selectedTone === "Custom" && customTone ? customTone : selectedTone);
     formData.append('language', language);
+
+    // Add a unique element for every generation to ensure variation
+    formData.append('generation_seed', `${Date.now()}-${Math.random()}`);
+
     if (regenerate && editedLetter) {
       formData.append('edited_letter', editedLetter);
     }
@@ -211,6 +251,15 @@ export default function App() {
     }
   }, [coverLetter]);
 
+  // Calculate rating after cover letter is generated
+  useEffect(() => {
+    if (coverLetter && jobDescription) {
+      setRating(getCoverLetterScore(jobDescription, coverLetter));
+    } else {
+      setRating(null);
+    }
+  }, [coverLetter, jobDescription]);
+
   // Example for rendering grouped requirements
   function renderGroupedRequirements(grouped, color, icon) {
     return Object.entries(grouped).map(([cat, items]) => (
@@ -234,37 +283,34 @@ export default function App() {
       <Toaster position="top-right" />
       {/* Header */}
       <header
-  className="fixed top-0 left-0 w-full z-50 flex items-center shadow-lg backdrop-blur-md"
-  style={{
-    background: "rgba(255,255,255,0.8)",
-    paddingTop: "1.5rem",
-    paddingBottom: "1.5rem",
-    paddingLeft: "2rem",
-    paddingRight: "2rem",
-    minHeight: "140px", // increase header height for larger logo
-    boxSizing: "border-box",
-    fontFamily: "'Inter', 'Poppins', 'Roboto', sans-serif",
-    borderBottom: "1px solid #e5e7eb"
-  }}
+  className="fixed top-0 left-0 w-full z-50 flex items-center shadow-lg backdrop-blur-md app-header"
 >
   <span className="flex items-center gap-4">
     <img
       src="/logo.png"
       alt="COVRLY.AI Logo"
-      className="h-[110px] w-auto" // increase height to 110px
+      className="h-[110px] w-auto"
       style={{ maxHeight: 110 }}
     />
-    <span className="text-2xl sm:text-3xl font-bold tracking-tight text-blue-900">
+    <span className="text-2xl sm:text-3xl font-bold tracking-tight text-blue-900 dark:text-white">
     </span>
   </span>
   <nav className="ml-auto flex gap-4 sm:gap-6 items-center">
     <button
       onClick={() => setDark(d => !d)}
-      className="ml-2 sm:ml-4 p-2 rounded-full bg-blue-700 hover:bg-blue-600 transition text-xl shadow-md hover:scale-110 duration-200"
+      className="ml-2 sm:ml-4 p-2 rounded-full bg-blue-700 hover:bg-blue-600 dark:bg-gray-800 dark:hover:bg-gray-700 transition text-2xl shadow-md hover:scale-110 duration-200 flex items-center justify-center"
       title={dark ? "Light mode" : "Dark mode"}
       style={{ transition: "background 0.2s, transform 0.2s" }}
     >
-      {dark ? <MdOutlineLightMode /> : <MdOutlineDarkMode />}
+      {dark ? <MdOutlineLightMode size={32} /> : <MdOutlineDarkMode size={32} />}
+    </button>
+    <button
+      className="ml-2 sm:ml-4 p-2 rounded-full bg-gray-200 hover:bg-gray-300 dark:bg-gray-700 dark:hover:bg-gray-600 transition text-2xl shadow-md flex items-center justify-center"
+      title="Languages"
+      style={{ transition: "background 0.2s, transform 0.2s" }}
+      // onClick={...} // Add your language menu logic here
+    >
+      <IoLanguageOutline size={28} />
     </button>
   </nav>
 </header>
@@ -399,7 +445,9 @@ export default function App() {
             className="w-full lg:w-[54%] flex flex-col justify-center items-center"
           >
             <div className="bg-white dark:bg-gray-900 dark:text-gray-100 rounded-2xl shadow-xl w-full max-w-5xl p-4 sm:p-6 md:p-10 animate-slide-in space-y-4 min-h-[320px] sm:min-h-[400px] flex flex-col transition-all duration-300 hover:shadow-2xl">
-              <h2 className="text-lg sm:text-2xl font-bold mb-2 text-blue-700 text-center" style={{ fontFamily: "'Inter', 'Poppins', 'Roboto', sans-serif" }}>Tailored Just for You 🖊️✨</h2>
+              <h2 className="text-lg sm:text-2xl font-bold mb-2 text-blue-700 text-center max-w-4xl mx-auto" style={{ fontFamily: "'Inter', 'Poppins', 'Roboto', sans-serif" }}>
+                Tailored Just for You 🖊️✨
+              </h2>
               {coverLetter ? (
                 <>
                   {/* Edit Mode */}
@@ -444,8 +492,8 @@ export default function App() {
                     <>
                       <pre
                         className={`whitespace-pre-wrap text-gray-800 font-mono flex-1 transition-all duration-300 rounded-lg border p-3 bg-gray-50 ${
-                          expanded ? "max-h-[700px]" : "max-h-80"
-                        } overflow-auto text-xs sm:text-base`}
+                          expanded ? "max-h-[900px]" : "max-h-[400px]"
+                        } min-h-[320px] sm:min-h-[400px] w-full text-xs sm:text-base overflow-auto`}
                         style={{
                           fontFamily: "inherit",
                           direction: language === "Arabic" ? "rtl" : "ltr",
@@ -494,7 +542,7 @@ export default function App() {
                   {/* --- Job-Fit Score Card --- */}
                   {jobFitScore && (
                     <div
-                      className={`mt-4 mx-auto max-w-xs w-full rounded-xl border-2 p-5 flex flex-col items-center text-center shadow transition bg-white dark:bg-gray-900 ${SCORE_COLORS[jobFitScore.border_color]}`}
+                      className={`mt-4 mx-auto max-w-lg w-full rounded-xl border-2 p-5 flex flex-col items-center text-center shadow transition bg-white dark:bg-gray-900 ${SCORE_COLORS[jobFitScore.border_color]}`}
                     >
                       <div className="text-3xl mb-2">{jobFitScore.match_icon}</div>
                       <div className="text-lg font-bold mb-1">Job-Fit Score:</div>
@@ -613,6 +661,32 @@ export default function App() {
                       </div>
                     </div>
                   )}
+                  {/* --- Cover Letter Rating --- */}
+                  {coverLetter && rating && (
+                    <div className="mt-6 flex flex-col items-center justify-center bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-700 shadow p-4 max-w-md mx-auto">
+                      <div className="flex items-center gap-2 mb-1">
+                        <span className="text-lg font-semibold">Cover Letter Rating:</span>
+                        <span className="flex items-center">
+                          {[...Array(5)].map((_, i) => (
+                            <FaStar
+                              key={i}
+                              className={i < rating.stars ? "text-yellow-400" : "text-gray-300"}
+                              size={22}
+                            />
+                          ))}
+                        </span>
+                        <span className="ml-2 text-base font-bold text-blue-700">{rating.score}/100</span>
+                      </div>
+                      <div className="text-sm text-gray-700 dark:text-gray-200 text-center">{rating.message}</div>
+                      <button
+                        className="mt-3 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-semibold transition text-sm shadow active:scale-95"
+                        onClick={() => handleGenerate(true)}
+                        title="Regenerate for a higher score"
+                      >
+                        Regenerate for a higher score
+                      </button>
+                    </div>
+                  )}
                 </>
               ) : (
                 <div className="text-gray-400 text-center mt-12 text-sm sm:text-base">Your generated cover letter will appear here.</div>
@@ -627,18 +701,8 @@ export default function App() {
       </div>
 
       {/* Footer */}
-      <footer
-        className="w-full text-center py-4"
-        style={{
-          background: "rgba(240, 240, 245, 0.85)",
-          color: "#444",
-          fontSize: "1rem",
-          letterSpacing: "0.01em",
-          borderTop: "1px solid #e5e7eb",
-          marginTop: "auto"
-        }}
-      >
-        © 2025 MeriemSakka. All rights reserved.
+      <footer className="app-footer dark:app-footer-dark">
+        © 2025 Coverly.ai. All rights reserved.
       </footer>
     </>
   );
