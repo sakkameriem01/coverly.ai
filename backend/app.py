@@ -1,5 +1,4 @@
 import os
-import google.generativeai as genai
 from flask import Flask, request, jsonify
 from flask_cors import CORS
 from PyPDF2 import PdfReader
@@ -8,11 +7,21 @@ import json
 import numpy as np
 from PIL import Image
 import pytesseract
+import google.generativeai as genai
+from dotenv import load_dotenv
+
+# Load environment variables from .env file
+load_dotenv()
 
 app = Flask(__name__)
 CORS(app)
 
-genai.configure(api_key="AIzaSyDP2zEhevPTO2g18HznN18u9fDTLz1VI6Y")
+# Get API key from environment variable
+GENAI_API_KEY = os.getenv("GENAI_API_KEY")
+if not GENAI_API_KEY:
+    raise RuntimeError("GENAI_API_KEY not set in environment variables or .env file.")
+
+genai.configure(api_key=GENAI_API_KEY)
 
 def extract_keywords(text, top_n=20):
     stopwords = set([
