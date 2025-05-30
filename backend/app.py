@@ -200,17 +200,17 @@ def generate_cover_letter():
         total = len(unique_requirements) if unique_requirements else 1
         score = int((len(matched) / total) * 100)
         if score < 30:
-            match_level = "Low Match"
+            match_level = "lowMatch"
             match_icon = "🔴"
             border_color = "red"
             encouragement = "Consider tailoring your resume more closely to this role 💪"
         elif score < 60:
-            match_level = "Moderate Match"
+            match_level = "moderateMatch"
             match_icon = "🟡"
             border_color = "yellow"
             encouragement = "Good start! You could improve your match by highlighting more relevant experience 🎯"
         else:
-            match_level = "Strong Match"
+            match_level = "strongMatch"
             match_icon = "🟢"
             border_color = "green"
             encouragement = "Great match! Your experience aligns well with this role 🎉"
