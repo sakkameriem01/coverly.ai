@@ -1,0 +1,135 @@
+{
+  "header": {
+    "darkMode": "Mode sombre",
+    "lightMode": "Mode clair",
+    "languages": "Langues",
+    "history": "Historique",
+    "languageChanged": "Langue changée en {{language}}"
+  },
+  "form": {
+    "title": "Générez Votre Lettre de Motivation",
+    "resumeUpload": {
+      "dragDrop": "Glissez-déposez votre CV (PDF ou Image) ici, ou parcourez",
+      "fileSelected": "Fichier sélectionné",
+      "error": "Veuillez télécharger un fichier PDF ou une image"
+    },
+    "jobDescription": {
+      "label": "Description du Poste",
+      "placeholder": "Collez la description du poste ici...",
+      "characters": "caractères",
+      "detectedTitle": "Nous avons détecté ce titre de poste :",
+      "editTitle": "cliquez pour modifier si ce n'est pas correct",
+      "detectedCompany": "Nous avons détecté cette entreprise :",
+      "editCompany": "cliquez pour modifier si ce n'est pas correct"
+    },
+    "coverLetterLanguage": {
+      "label": "Langue de la Lettre de Motivation"
+    },
+    "tone": {
+      "label": "Ton",
+      "customPlaceholder": "Décrivez votre ton (ex. Persuasif, Humoristique...)",
+      "options": {
+        "formal": {
+          "label": "Formel",
+          "tooltip": "Direct et professionnel"
+        },
+        "friendly": {
+          "label": "Amical",
+          "tooltip": "Chaleureux et accessible"
+        },
+        "confident": {
+          "label": "Confiant",
+          "tooltip": "Audacieux et sûr de soi"
+        },
+        "enthusiastic": {
+          "label": "Enthousiaste",
+          "tooltip": "Énergique et passionné"
+        },
+        "academic": {
+          "label": "Académique",
+          "tooltip": "Objectif et savant"
+        },
+        "calm": {
+          "label": "Calme",
+          "tooltip": "Détendu et posé"
+        },
+        "persuasive": {
+          "label": "Persuasif",
+          "tooltip": "Convaincant et motivant"
+        },
+        "analytical": {
+          "label": "Analytique",
+          "tooltip": "Logique et basé sur les données"
+        },
+        "leadership": {
+          "label": "Leadership",
+          "tooltip": "Visionnaire et inspirant"
+        },
+        "storytelling": {
+          "label": "Narratif",
+          "tooltip": "Récit et engageant"
+        },
+        "custom": {
+          "label": "Personnalisé",
+          "tooltip": "Définissez votre propre ton"
+        }
+      }
+    },
+    "generate": {
+      "generate": "Générer",
+      "generating": "Génération en cours..."
+    }
+  },
+  "output": {
+    "title": "Personnalisé Pour Vous",
+    "empty": "Votre lettre de motivation générée apparaîtra ici.",
+    "actions": {
+      "copy": "Copier dans le Presse-papiers",
+      "copied": "Copié !",
+      "expand": "Développer",
+      "collapse": "Réduire",
+      "edit": "Modifier",
+      "save": "Enregistrer",
+      "cancel": "Annuler",
+      "regenerate": "Régénérer",
+      "download": "Télécharger en PDF",
+      "rename": "Renommer",
+      "delete": "Supprimer"
+    }
+  },
+  "jobFit": {
+    "title": "Score de Compatibilité",
+    "lowMatch": "Faible compatibilité",
+    "moderateMatch": "Compatibilité modérée",
+    "strongMatch": "Forte compatibilité",
+    "resumeMatchPercentage": "Votre CV correspond à {{score}}% des exigences du poste.",
+    "considerTailoring": "Envisagez d'adapter votre CV plus précisément à ce poste 💪",
+    "goodStart": "Bon début ! Vous pourriez améliorer votre compatibilité en mettant en valeur plus d'expérience pertinente 🎯",
+    "greatMatch": "Excellente compatibilité ! Votre expérience correspond bien à ce poste 🎉",
+    "requirementsExplanation": "Les exigences correspondantes sont présentes dans votre CV et l'offre d'emploi. Les exigences manquantes sont celles que les employeurs pourraient attendre mais qui n'apparaissent pas dans votre CV"
+  },
+  "coverLetterRating": {
+    "title": "Évaluation de la Lettre de Motivation",
+    "ratingMessage": {
+      "excellent": "Excellent ! Votre lettre correspond parfaitement à la description du poste.",
+      "great": "Très bonne correspondance ! Votre lettre s'aligne bien avec la description du poste.",
+      "good": "Bon début, mais vous pouvez encore améliorer la correspondance.",
+      "fair": "Contenu pertinent, mais une meilleure correspondance est nécessaire.",
+      "poor": "À améliorer. Essayez d'inclure plus de détails pertinents."
+    }
+  },
+  "history": {
+    "title": "Historique des Lettres",
+    "empty": "Aucune lettre sauvegardée.",
+    "actions": {
+      "rename": "Renommer",
+      "delete": "Supprimer",
+      "download": "Télécharger en PDF",
+      "save": "Enregistrer",
+      "cancel": "Annuler"
+    }
+  },
+  "footer": {
+    "copyright": "© 2025 Coverly.ai. Tous droits réservés."
+  }
+}

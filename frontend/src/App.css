@@ -67,6 +67,8 @@ h1, h2, h3, h4, h5, h6,
   min-height: 140px;
   box-sizing: border-box;
   border-bottom: 1px solid var(--color-divider);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
 }
 .dark .app-header {
   background: var(--color-surface-dark);
@@ -90,7 +92,7 @@ h1, h2, h3, h4, h5, h6,
 .main-content {
   background: #F4F4F4 !important;
   color: var(--color-text);
-  padding-top: 170px;
+  padding-top: 2rem;
 }
 .dark .main-content {
   background: var(--color-bg-dark) !important;
@@ -316,7 +318,7 @@ html {
 }
 
 .main-content {
-  padding-top: 170px; 
+  padding-top: 2rem;
 }
 
 /* Animations */
@@ -505,4 +507,215 @@ input[type="submit"]:hover {
 .app-header .btn:focus {
   --tw-border-opacity: 1 !important;
   border-color: #2C2F36 !important;
+}
+
+/* History Panel Styles */
+.history-panel {
+  position: relative;
+  background: var(--color-card);
+  border-radius: 1rem;
+  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+  max-width: 42rem;
+  width: 100%;
+  padding: 1.5rem;
+}
+
+.history-panel .cancel-button {
+  position: absolute;
+  padding: 0.25rem;
+  color: #9CA3AF;
+  transition: all 0.2s ease;
+  border-radius: 9999px;
+}
+
+.history-panel .cancel-button:hover {
+  color: #2563EB;
+  background-color: #F3F4F6;
+}
+
+.dark .history-panel .cancel-button:hover {
+  background-color: #1F2937;
+}
+
+.history-panel .history-title {
+  font-weight: 700;
+  margin-bottom: 1rem;
+  transition: all 0.2s ease;
+}
+
+/* RTL specific styles */
+[dir="rtl"] .history-panel .cancel-button {
+  left: 0.5rem !important;
+  right: auto !important;
+}
+
+[dir="rtl"] .history-panel .history-title {
+  font-size: 1.875rem !important;
+  text-align: right !important;
+  padding-right: 2rem !important;
+}
+
+/* Job Fit Score */
+.job-fit-score {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  margin-bottom: 0.5rem;
+}
+
+.job-fit-score-icon {
+  font-size: 1.875rem;
+}
+
+.job-fit-score-label {
+  font-size: 1.125rem;
+  font-weight: 700;
+}
+
+.job-fit-score-value {
+  font-size: 2.25rem;
+  font-weight: 800;
+  margin-left: 0.5rem;
+}
+
+[dir="rtl"] .job-fit-score-value {
+  font-size: 3rem !important;
+}
+
+.job-fit-match-level {
+  font-size: 1rem;
+  font-weight: 600;
+  margin-bottom: 0.5rem;
+}
+
+[dir="rtl"] .job-fit-match-level {
+  font-size: 1.125rem !important;
+}
+
+/* Cover Letter Rating */
+.cover-letter-rating {
+  margin-top: 1.5rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  background: var(--color-card);
+  border-radius: 0.75rem;
+  border: 1px solid #E5E7EB;
+  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1);
+  padding: 1rem;
+  max-width: 28rem;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.rating-header {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 0.25rem;
+}
+
+.rating-title {
+  font-size: 1.125rem;
+  font-weight: 600;
+}
+
+.rating-stars {
+  display: flex;
+  align-items: center;
+}
+
+.rating-score {
+  margin-left: 0.5rem;
+  font-size: 1rem;
+  font-weight: 700;
+  color: #1D4ED8;
+}
+
+.rating-message {
+  font-size: 0.875rem;
+  color: #4B5563;
+  text-align: center;
+}
+
+.dark .rating-message {
+  color: #D1D5DB;
+}
+
+.regenerate-button {
+  margin-top: 0.75rem;
+  padding: 0.5rem;
+  background-color: #2563EB;
+  color: white;
+  border-radius: 0.5rem;
+  font-weight: 600;
+  transition: all 0.2s;
+  box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.regenerate-button:hover {
+  background-color: #1D4ED8;
+  transform: scale(0.95);
+}
+
+/* Form Elements */
+.form-container {
+  background: var(--color-card);
+  border-radius: 1rem;
+  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+  width: 100%;
+  max-width: 42rem;
+  padding: 1.5rem;
+  animation: fadeIn 0.7s;
+  transition: all 0.3s;
+}
+
+.form-container > * {
+  margin-bottom: 1.5rem;
+}
+
+.form-container > *:last-child {
+  margin-bottom: 0;
+}
+
+.form-title {
+  font-size: 1.25rem;
+  font-weight: 700;
+  margin-bottom: 1.5rem;
+}
+
+.cv-upload-container {
+  margin-bottom: 1.5rem;
+}
+
+textarea, select {
+  margin-bottom: 1.5rem;
+}
+
+/* Tone selector spacing */
+.tone-pill {
+  margin-bottom: 0.75rem;
+}
+
+/* Responsive adjustments */
+@media (min-width: 640px) {
+  .form-container {
+    padding: 2rem;
+  }
+  
+  .form-title {
+    font-size: 1.5rem;
+    margin-bottom: 2rem;
+  }
+}
+
+@media (min-width: 768px) {
+  .form-container {
+    padding: 2.5rem;
+  }
 }

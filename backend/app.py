@@ -21,6 +21,74 @@ if not GENAI_API_KEY:
 
 genai.configure(api_key=GENAI_API_KEY)
 
+# Language code to name mapping
+LANGUAGE_MAP = {
+    'en': 'English',
+    'fr': 'French',
+    'ar': 'Arabic'
+}
+
+# Language-specific prompts
+LANGUAGE_PROMPTS = {
+    "English": {
+        "extraction": """
+Extract the following from this job description as a JSON object with these keys:
+- "skills": list of specific skills (e.g. "Python", "TensorFlow", "Prompt Engineering")
+- "tools": list of tools/technologies (e.g. "AWS", "Docker", "Figma")
+- "certifications": list of certifications (e.g. "AWS Certified Solutions Architect")
+- "education": list of education requirements (e.g. "Bachelor's in Computer Science")
+- "experience": list of years of experience or explicit requirements (e.g. "3+ years experience in software development")
+
+Only include clear, standardized, non-duplicated, non-overlapping, and meaningful items. Do not include adjectives, parentheticals, or vague phrases. Do not include entire sentences.
+""",
+        "job_title": """
+Based on this job description, what is the most accurate and concise job title for this position?
+Just return the job title only. Limit your answer to 2–8 words.
+""",
+        "cover_letter": """
+Write a cover letter in English in a {tone} tone that matches the resume and job description below.
+"""
+    },
+    "French": {
+        "extraction": """
+Extrayez les éléments suivants de cette description de poste sous forme d'objet JSON avec ces clés :
+- "skills": liste des compétences spécifiques (ex: "Python", "TensorFlow", "Prompt Engineering")
+- "tools": liste des outils/technologies (ex: "AWS", "Docker", "Figma")
+- "certifications": liste des certifications (ex: "AWS Certified Solutions Architect")
+- "education": liste des exigences en matière d'éducation (ex: "Licence en informatique")
+- "experience": liste des années d'expérience ou des exigences explicites (ex: "3+ ans d'expérience en développement logiciel")
+
+N'incluez que des éléments clairs, standardisés, non dupliqués, non chevauchants et significatifs. N'incluez pas d'adjectifs, de parenthèses ou de phrases vagues. N'incluez pas de phrases entières.
+""",
+        "job_title": """
+Sur la base de cette description de poste, quel est le titre de poste le plus précis et concis ?
+Retournez uniquement le titre du poste. Limitez votre réponse à 2-8 mots.
+""",
+        "cover_letter": """
+Rédigez une lettre de motivation en français sur un ton {tone} qui correspond au CV et à la description du poste ci-dessous.
+"""
+    },
+    "Arabic": {
+        "extraction": """
+استخرج العناصر التالية من وصف الوظيفة ككائن JSON بهذه المفاتيح:
+- "skills": قائمة المهارات المحددة (مثال: "Python", "TensorFlow", "Prompt Engineering")
+- "tools": قائمة الأدوات/التقنيات (مثال: "AWS", "Docker", "Figma")
+- "certifications": قائمة الشهادات (مثال: "AWS Certified Solutions Architect")
+- "education": قائمة متطلبات التعليم (مثال: "بكالوريوس في علوم الكمبيوتر")
+- "experience": قائمة سنوات الخبرة أو المتطلبات الصريحة (مثال: "3+ سنوات خبرة في تطوير البرمجيات")
+
+قم بتضمين العناصر الواضحة والموحدة وغير المكررة وغير المتداخلة والهادفة فقط. لا تقم بتضمين الصفات أو الأقواس أو العبارات الغامضة. لا تقم بتضمين جمل كاملة.
+""",
+        "job_title": """
+بناءً على وصف الوظيفة هذا، ما هو عنوان الوظيفة الأكثر دقة وإيجازًا؟
+قم بإرجاع عنوان الوظيفة فقط. قم بتقييد إجابتك إلى 2-8 كلمات.
+""",
+        "cover_letter": """
+اكتب خطاب تغطية باللغة العربية بأسلوب {tone} يتناسب مع السيرة الذاتية ووصف الوظيفة أدناه.
+"""
+    }
+}
+
 @app.route('/generate-cover-letter', methods=['POST'])
 def generate_cover_letter():
     """
@@ -31,7 +99,7 @@ def generate_cover_letter():
     resume_file = request.files.get('resume')
     job_description = request.form.get('job_description')
     tone = request.form.get('tone', 'Formal')
-    language = request.form.get('language', 'English')
+    language_code = request.form.get('language', 'en')
     edited_letter = request.form.get('edited_letter', None)
     generation_seed = request.form.get('generation_seed', None)
 
@@ -39,6 +107,9 @@ def generate_cover_letter():
         return jsonify({'error': 'Missing resume or job description'}), 400
 
     try:
+        # Convert language code to full name
+        language = LANGUAGE_MAP.get(language_code, 'English')
+        
         # Extract text from PDF or image using OCR utility functions
         if resume_file.filename.lower().endswith('.pdf'):
             resume_text = extract_text_from_pdf(resume_file)
@@ -49,18 +120,10 @@ def generate_cover_letter():
 
         # Use Gemini model to extract requirements from job description
         model = genai.GenerativeModel('models/gemini-1.5-flash-latest')
-        extraction_prompt = """
-Extract the following from this job description as a JSON object with these keys:
-- "skills": list of specific skills (e.g. "Python", "TensorFlow", "Prompt Engineering")
-- "tools": list of tools/technologies (e.g. "AWS", "Docker", "Figma")
-- "certifications": list of certifications (e.g. "AWS Certified Solutions Architect")
-- "education": list of education requirements (e.g. "Bachelor's in Computer Science")
-- "experience": list of years of experience or explicit requirements (e.g. "3+ years experience in software development")
-
-Only include clear, standardized, non-duplicated, non-overlapping, and meaningful items. Do not include adjectives, parentheticals, or vague phrases. Do not include entire sentences.
-
-Job Description:
-""" + job_description
+        
+        # Get language-specific prompt
+        lang_prompts = LANGUAGE_PROMPTS.get(language, LANGUAGE_PROMPTS["English"])
+        extraction_prompt = lang_prompts["extraction"] + "\n\nJob Description:\n" + job_description
 
         extraction_response = model.generate_content(extraction_prompt)
         try:
@@ -137,66 +200,44 @@ Job Description:
         total = len(unique_requirements) if unique_requirements else 1
         score = int((len(matched) / total) * 100)
         if score < 30:
-            match_level = "Low Match"
+            match_level = "lowMatch"
             match_icon = "🔴"
             border_color = "red"
-            encouragement = "Consider tailoring your resume more closely to this role 💪"
+            encouragement = "considerTailoring"
         elif score < 60:
-            match_level = "Moderate Match"
+            match_level = "moderateMatch"
             match_icon = "🟡"
             border_color = "yellow"
-            encouragement = "Not bad! You might want to highlight a few more relevant skills. 🚀"
+            encouragement = "goodStart"
         else:
-            match_level = "High Match"
+            match_level = "strongMatch"
             match_icon = "🟢"
             border_color = "green"
-            encouragement = "You're a strong match! Make sure your cover letter shines! 🌟"
+            encouragement = "greatMatch"
 
-        explanation = [
-            f"Matched {len(matched)} out of {total} key requirements.",
-            encouragement
-        ]
-
-        # Prepare prompt for cover letter generation
+        # Generate cover letter using Gemini
+        cover_letter_prompt = lang_prompts["cover_letter"].format(tone=tone) + f"\n\nResume:\n{resume_text}\n\nJob Description:\n{job_description}"
         if edited_letter:
-            prompt = f"""
-Here's a slightly edited version of the previous cover letter. Improve it while keeping the same tone and structure, and write it in {language}.
-
-Resume:
-{resume_text}
-
-Job Description:
-{job_description}
-
-Previous (edited) cover letter:
-{edited_letter}
-
-# Unique generation seed for variety: {generation_seed}
-"""
-        else:
-            prompt = f"""
-Write a cover letter in {language} in a {tone} tone that matches the resume and job description below.
-
-Resume:
-{resume_text}
-
-Job Description:
-{job_description}
-
-# Unique generation seed for variety: {generation_seed}
-"""
-
-        # Generate cover letter using Gemini model
-        response = model.generate_content(prompt)
+            cover_letter_prompt += f"\n\nPrevious version of the letter:\n{edited_letter}\n\nPlease improve upon this version while maintaining the same language and tone."
+        
+        cover_letter_response = model.generate_content(cover_letter_prompt)
+        cover_letter = cover_letter_response.text
 
         return jsonify({
-            'cover_letter': response.text,
+            'cover_letter': cover_letter,
             'job_fit_score': {
                 'score': score,
                 'match_level': match_level,
                 'match_icon': match_icon,
                 'border_color': border_color,
-                'explanation': explanation,
+                'explanation': [
+                    "resumeMatchPercentage",
+                    encouragement
+                ],
+                'keywords': {
+                    'matched': [req for _, req in matched],
+                    'missing': [req for _, req in missing]
+                },
                 'requirements': {
                     'matched': matched_grouped,
                     'missing': missing_grouped
@@ -205,37 +246,36 @@ Job Description:
         })
 
     except Exception as e:
-        print(e)
-        return jsonify({'error': 'Failed to generate cover letter'}), 500
+        return jsonify({'error': str(e)}), 500
 
 @app.route('/extract-job-title', methods=['POST'])
 def extract_job_title():
     """
-    Extract the most accurate and concise job title from the job description using Gemini API.
-    Returns: JSON with 'job_title'
+    Flask route to extract job title from job description.
+    Returns:
+        JSON response containing the extracted job title.
     """
     data = request.get_json()
-    job_description = data.get('job_description', '')
+    job_description = data.get('job_description')
+    language_code = data.get('language', 'en')
+    
     if not job_description:
-        return jsonify({'job_title': ''})
+        return jsonify({'error': 'Missing job description'}), 400
 
     try:
+        # Convert language code to full name
+        language = LANGUAGE_MAP.get(language_code, 'English')
+        
+        # Use Gemini model to extract job title
         model = genai.GenerativeModel('models/gemini-1.5-flash-latest')
-        prompt = (
-            "Based on this job description, what is the most accurate and concise job title for this position? "
-            "Just return the job title only. Limit your answer to 2–8 words. "
-            "Job Description:\n" + job_description
-        )
+        prompt = LANGUAGE_PROMPTS[language]["job_title"] + "\n\nJob Description:\n" + job_description
+        
         response = model.generate_content(prompt)
         job_title = response.text.strip()
-        # Clean up: limit to 2–8 words, remove extra punctuation
-        job_title = " ".join(job_title.split()[:8]).strip(".,;:!?")
-        if len(job_title.split()) < 2:
-            return jsonify({'job_title': ''})
+        
         return jsonify({'job_title': job_title})
     except Exception as e:
-        print(e)
-        return jsonify({'job_title': ''})
+        return jsonify({'error': str(e)}), 500
 
 if __name__ == '__main__':
     app.run(debug=True)

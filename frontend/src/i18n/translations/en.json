@@ -1,0 +1,135 @@
+{
+  "header": {
+    "darkMode": "Dark mode",
+    "lightMode": "Light mode",
+    "languages": "Languages",
+    "history": "History",
+    "languageChanged": "Language changed to {{language}}"
+  },
+  "form": {
+    "title": "Generate Your Cover Letter",
+    "resumeUpload": {
+      "dragDrop": "Drag & drop your CV (PDF or Image) here, or browse",
+      "fileSelected": "File selected",
+      "error": "Please upload a PDF or image file"
+    },
+    "jobDescription": {
+      "label": "Job Description",
+      "placeholder": "Paste the job description here...",
+      "characters": "characters",
+      "detectedTitle": "We detected this job title:",
+      "editTitle": "click to edit if it's not right",
+      "detectedCompany": "We detected this company:",
+      "editCompany": "click to edit if it's not right"
+    },
+    "coverLetterLanguage": {
+      "label": "Cover Letter Language"
+    },
+    "tone": {
+      "label": "Tone",
+      "customPlaceholder": "Describe your tone (e.g. Persuasive, Humorous...)",
+      "options": {
+        "formal": {
+          "label": "Formal",
+          "tooltip": "Straightforward and professional"
+        },
+        "friendly": {
+          "label": "Friendly",
+          "tooltip": "Warm and approachable"
+        },
+        "confident": {
+          "label": "Confident",
+          "tooltip": "Bold and self-assured"
+        },
+        "enthusiastic": {
+          "label": "Enthusiastic",
+          "tooltip": "Energetic and passionate"
+        },
+        "academic": {
+          "label": "Academic",
+          "tooltip": "Objective and scholarly"
+        },
+        "calm": {
+          "label": "Calm",
+          "tooltip": "Relaxed and composed"
+        },
+        "persuasive": {
+          "label": "Persuasive",
+          "tooltip": "Convincing and motivating"
+        },
+        "analytical": {
+          "label": "Analytical",
+          "tooltip": "Logical and data-driven"
+        },
+        "leadership": {
+          "label": "Leadership",
+          "tooltip": "Visionary and inspiring"
+        },
+        "storytelling": {
+          "label": "Storytelling",
+          "tooltip": "Narrative and engaging"
+        },
+        "custom": {
+          "label": "Custom",
+          "tooltip": "Define your own tone"
+        }
+      }
+    },
+    "generate": {
+      "generate": "Generate",
+      "generating": "Generating..."
+    }
+  },
+  "output": {
+    "title": "Tailored Just for You",
+    "empty": "Your generated cover letter will appear here.",
+    "actions": {
+      "copy": "Copy to Clipboard",
+      "copied": "Copied!",
+      "expand": "Expand",
+      "collapse": "Collapse",
+      "edit": "Edit",
+      "save": "Save",
+      "cancel": "Cancel",
+      "regenerate": "Regenerate",
+      "download": "Download as PDF",
+      "rename": "Rename",
+      "delete": "Delete"
+    }
+  },
+  "jobFit": {
+    "title": "Job Fit Score",
+    "lowMatch": "Low Match",
+    "moderateMatch": "Moderate Match",
+    "strongMatch": "Strong Match",
+    "resumeMatchPercentage": "Your resume matches {{score}}% of the job requirements.",
+    "considerTailoring": "Consider tailoring your resume more closely to this role 💪",
+    "goodStart": "Good start! You could improve your match by highlighting more relevant experience 🎯",
+    "greatMatch": "Great match! Your experience aligns well with this role 🎉",
+    "requirementsExplanation": "Matched requirements are found in your resume and the job post. Missing ones are what employers might expect but don't appear in your resume"
+  },
+  "coverLetterRating": {
+    "title": "Cover Letter Rating",
+    "ratingMessage": {
+      "excellent": "Excellent! Your letter aligns perfectly with the job description.",
+      "great": "Great match! Your letter aligns well with the job description.",
+      "good": "Good start, but you can improve the match further.",
+      "fair": "Some relevant content, but more alignment is needed.",
+      "poor": "Needs improvement. Try to include more relevant details."
+    }
+  },
+  "history": {
+    "title": "Cover Letter History",
+    "empty": "No saved cover letters yet.",
+    "actions": {
+      "rename": "Rename",
+      "delete": "Delete",
+      "download": "Download as PDF",
+      "save": "Save",
+      "cancel": "Cancel"
+    }
+  },
+  "footer": {
+    "copyright": "© 2025 Coverly.ai. All rights reserved."
+  }
+} 

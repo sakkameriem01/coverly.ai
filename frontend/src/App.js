@@ -6,11 +6,13 @@ import { Toaster, toast } from "react-hot-toast";
 import { BiCopy } from "react-icons/bi";
 import { MdOutlineDone, MdOutlineDarkMode, MdOutlineLightMode, MdExpandMore, MdOutlineEdit, MdCheckCircle, MdErrorOutline, MdInfoOutline, MdOutlineDelete, MdDriveFileRenameOutline, MdOutlineFileDownload } from "react-icons/md";
 import { LuBrain, LuHistory } from "react-icons/lu";
-import { BsCircleFill } from "react-icons/bs";
+import { BsCircleFill, BsArrowRepeat } from "react-icons/bs";
 import { IoLanguageOutline } from "react-icons/io5";
 import { FaStar } from "react-icons/fa";
 import jsPDF from "jspdf"; // npm install jspdf
 import './App.css';
+import { useTranslation } from 'react-i18next';
+import './i18n';
 
 // --- Utility Functions ---
 
@@ -55,23 +57,25 @@ function highlightKeywords(text, keywords) {
 }
 
 const TONE_OPTIONS = [
-  { value: "Formal", label: "Formal", icon: "💼", tooltip: "Straightforward and professional" },
-  { value: "Friendly", label: "Friendly", icon: "😄", tooltip: "Warm and approachable" },
-  { value: "Confident", label: "Confident", icon: "💪", tooltip: "Bold and self-assured" },
-  { value: "Enthusiastic", label: "Enthusiastic", icon: "✨", tooltip: "Energetic and passionate" },
-  { value: "Academic", label: "Academic", icon: "🤓", tooltip: "Objective and scholarly" },
-  { value: "Calm", label: "Calm", icon: "🧘", tooltip: "Relaxed and composed" },
-  { value: "Persuasive", label: "Persuasive", icon: "🔥", tooltip: "Convincing and motivating" },
-  { value: "Analytical", label: "Analytical", icon: "🧠", tooltip: "Logical and data-driven" },
-  { value: "Leadership", label: "Leadership", icon: "🥇", tooltip: "Visionary and inspiring" },
-  { value: "Storytelling", label: "Storytelling", icon: "💬", tooltip: "Narrative and engaging" },
-  { value: "Custom", label: "Custom", icon: "📝", tooltip: "Define your own tone" }
+  { value: "formal", icon: "💼" },
+  { value: "friendly", icon: "😄" },
+  { value: "confident", icon: "💪" },
+  { value: "enthusiastic", icon: "✨" },
+  { value: "academic", icon: "🤓" },
+  { value: "calm", icon: "🧘" },
+  { value: "persuasive", icon: "🔥" },
+  { value: "analytical", icon: "🧠" },
+  { value: "leadership", icon: "🥇" },
+  { value: "storytelling", icon: "💬" },
+  { value: "custom", icon: "📝" }
 ];
 
 function ToneSelector({ selectedTone, setSelectedTone, customTone, setCustomTone }) {
+  const { t } = useTranslation();
+  
   return (
     <div>
-      <label className="block mb-2 font-semibold text-base sm:text-lg">Tone</label>
+      <label className="block mb-2 font-semibold text-base sm:text-lg">{t('form.tone.label')}</label>
       <div className="flex overflow-x-auto gap-2 pb-2">
         {TONE_OPTIONS.map((tone) => (
           <button
@@ -83,20 +87,20 @@ function ToneSelector({ selectedTone, setSelectedTone, customTone, setCustomTone
                 ? "border-blue-500 shadow-md bg-blue-50 dark:bg-gray-800"
                 : "border-gray-200 bg-white dark:bg-gray-900 hover:border-blue-400"}
             `}
-            title={tone.tooltip}
+            title={t(`form.tone.options.${tone.value}.tooltip`)}
             onClick={() => setSelectedTone(tone.value)}
           >
             <span className="text-xl mb-1">{tone.icon}</span>
-            <span className="font-medium">{tone.label}</span>
+            <span className="font-medium">{t(`form.tone.options.${tone.value}.label`)}</span>
           </button>
         ))}
       </div>
-      {selectedTone === "Custom" && (
+      {selectedTone === "custom" && (
         <input
           type="text"
           value={customTone}
           onChange={e => setCustomTone(e.target.value)}
-          placeholder="Describe your tone (e.g. Persuasive, Humorous...)"
+          placeholder={t('form.tone.customPlaceholder')}
           className="mt-2 w-full border rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-300 transition bg-white dark:bg-gray-800 dark:text-gray-100"
         />
       )}
@@ -117,9 +121,9 @@ const ICONS = {
 };
 
 const LANGUAGE_OPTIONS = [
-  { value: "English", label: "English", icon: "🇺🇸" },
-  { value: "French", label: "Français", icon: "🇫🇷" },
-  { value: "Arabic", label: "العربية", icon: "🇸🇦" }
+  { value: "en", label: "English", icon: "🇺🇸" },
+  { value: "fr", label: "Français", icon: "🇫🇷" },
+  { value: "ar", label: "العربية", icon: "🇸🇦" }
 ];
 
 function getCoverLetterScore(jobDescription, coverLetter) {
@@ -185,6 +189,7 @@ function saveLetterToHistory(letter, jobDescription, meta = {}) {
 // --- Main App Component ---
 
 export default function App() {
+  const { t, i18n } = useTranslation();
   // --- State ---
   const [resumeFile, setResumeFile] = useState(null);
   const [resumeFileCache, setResumeFileCache] = useState(null);
@@ -195,10 +200,10 @@ export default function App() {
   const [copied, setCopied] = useState(false);
   const [expanded, setExpanded] = useState(false);
   const [dark, setDark] = useState(false);
-  const [selectedTone, setSelectedTone] = useState("Formal");
+  const [selectedTone, setSelectedTone] = useState("formal");
   const [customTone, setCustomTone] = useState("");
   const [jobFitScore, setJobFitScore] = useState(null);
-  const [language, setLanguage] = useState("English");
+  const [language, setLanguage] = useState(i18n.language || 'en');
   const [editMode, setEditMode] = useState(false);
   const [editedLetter, setEditedLetter] = useState('');
   const [prevLetter, setPrevLetter] = useState('');
@@ -212,6 +217,9 @@ export default function App() {
   const [jobTitleEdit, setJobTitleEdit] = useState(false);
   const [companyName, setCompanyName] = useState("");
   const [companyNameEdit, setCompanyNameEdit] = useState(false);
+  const [isGenerating, setIsGenerating] = useState(false);
+  const [error, setError] = useState(null);
+  const [languageDropdownOpen, setLanguageDropdownOpen] = useState(false);
 
   // --- Derived ---
   const keywords = extractKeywords(jobDescription);
@@ -253,6 +261,9 @@ export default function App() {
       formData.append('edited_letter', editedLetter);
     }
     setLoading(true);
+    setError(null);
+    setCoverLetter(null);
+    setJobFitScore(null);
     try {
       const res = await axios.post('http://localhost:5000/generate-cover-letter', formData);
       setCoverLetter(res.data.cover_letter);
@@ -271,7 +282,7 @@ export default function App() {
       setHistory(getHistory());
     } catch (err) {
       console.error(err);
-      toast.error("Something went wrong.");
+      setError("Something went wrong.");
     } finally {
       setLoading(false);
     }
@@ -325,7 +336,7 @@ export default function App() {
       const res = await fetch("http://localhost:5000/extract-job-title", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ job_description: jobDescription }),
+        body: JSON.stringify({ job_description: jobDescription, language: language }),
       });
       const data = await res.json();
       return data.job_title || "";
@@ -365,21 +376,26 @@ export default function App() {
   function HistoryModal() {
     return (
       <div className="fixed inset-0 bg-black bg-opacity-40 z-50 flex items-center justify-center">
-        <div className="bg-white dark:bg-gray-900 rounded-2xl shadow-xl max-w-2xl w-full p-6 relative">
+        <div className="history-panel">
           <button
-            className="absolute top-3 right-4 text-2xl text-gray-400 hover:text-blue-600"
+            className="cancel-button"
             onClick={() => setHistoryOpen(false)}
-          >×</button>
-          <h2 className="text-xl font-bold mb-4 text-blue-700">Cover Letter History</h2>
+            title={t('history.actions.cancel')}
+          >
+            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
+            </svg>
+          </button>
+          <h2 className="history-title">{t('history.title')}</h2>
           {history.length === 0 ? (
-            <div className="text-gray-500 text-center">No saved cover letters yet.</div>
+            <div className="text-gray-500 text-center">{t('history.empty')}</div>
           ) : (
             <ul className="space-y-4 max-h-[60vh] overflow-y-auto">
               {history.map(entry => (
                 <li key={entry.id} className="border rounded-lg p-4 bg-gray-50 dark:bg-gray-800 flex flex-col sm:flex-row sm:items-center gap-2">
                   <div className="flex-1">
                     <div className="flex flex-col sm:flex-row sm:items-center gap-2 mb-1">
-                      <span className="font-semibold">{entry.name}</span>
+                      <span className={`font-semibold ${language === 'ar' ? 'text-lg' : ''}`}>{entry.name}</span>
                       <span className="text-xs text-gray-500 ml-2">{new Date(entry.created).toLocaleString()}</span>
                     </div>
                     <div className="flex gap-3 mb-1 text-xs">
@@ -389,7 +405,7 @@ export default function App() {
                         <span className="px-2 py-1 bg-yellow-100 text-yellow-700 rounded">{entry.company}</span>
                       )}
                     </div>
-                    <div className="text-xs text-gray-700 dark:text-gray-200 italic mb-1">
+                    <div className={`text-xs text-gray-700 dark:text-gray-200 italic mb-1 ${language === 'ar' ? 'text-sm' : ''}`}>
                       {entry.letter.slice(0, 80).replace(/\n/g, " ")}{entry.letter.length > 80 ? "..." : ""}
                     </div>
                   </div>
@@ -408,11 +424,11 @@ export default function App() {
                             setRenameId(null);
                             setHistory(getHistory());
                           }}
-                        >Save</button>
+                        >{t('history.actions.save')}</button>
                         <button
                           className="text-gray-500 px-2"
                           onClick={() => setRenameId(null)}
-                        >Cancel</button>
+                        >{t('history.actions.cancel')}</button>
                       </div>
                     ) : (
                       <div className="flex gap-2">
@@ -422,7 +438,7 @@ export default function App() {
                             setRenameId(entry.id);
                             setRenameValue(entry.name);
                           }}
-                          title="Rename"
+                          title={t('history.actions.rename')}
                         >
                           <MdDriveFileRenameOutline size={22} />
                         </button>
@@ -432,7 +448,7 @@ export default function App() {
                             deleteLetterFromHistory(entry.id);
                             setHistory(getHistory());
                           }}
-                          title="Delete"
+                          title={t('history.actions.delete')}
                         >
                           <MdOutlineDelete size={22} />
                         </button>
@@ -446,7 +462,7 @@ export default function App() {
                               entry.company
                             )
                           }
-                          title="Download as PDF"
+                          title={t('history.actions.download')}
                         >
                           <MdOutlineFileDownload size={22} />
                         </button>
@@ -462,49 +478,77 @@ export default function App() {
     );
   }
 
+  const handleLanguageChange = (newLanguage) => {
+    const langCode = newLanguage.toLowerCase();
+    setLanguage(langCode);
+    i18n.changeLanguage(langCode);
+    setLanguageDropdownOpen(false);
+    
+    // Update document direction for RTL languages
+    document.documentElement.dir = langCode === 'ar' ? 'rtl' : 'ltr';
+    
+    // Show success message
+    const langLabel = LANGUAGE_OPTIONS.find(opt => opt.value === langCode)?.label;
+    toast.success(t('header.languageChanged', { language: langLabel }));
+  };
+
   // --- Render ---
   return (
     <>
       <Toaster position="top-right" />
       {/* Header */}
-      <header
-        className="fixed top-0 left-0 w-full z-50 flex items-center shadow-lg backdrop-blur-md app-header"
-      >
-        <span className="flex items-center gap-4">
-          <img
-            src={dark ? "/logo-dark.png" : "/logo.png"}
-            alt="COVRLY.AI Logo"
-            className="h-[110px] w-auto"
-            style={{ maxHeight: 110 }}
-          />
-          <span className="text-2xl sm:text-3xl font-bold tracking-tight text-blue-900 dark:text-white">
+      <header className="app-header">
+        <div className="flex justify-between items-center w-full">
+          <span className="flex items-center">
+            <img
+              src={dark ? "/logo-dark.png" : "/logo.png"}
+              alt="COVRLY.AI Logo"
+              className="h-[110px] w-auto"
+            />
           </span>
-        </span>
-        <nav className="ml-auto flex gap-4 sm:gap-6 items-center">
-          <button
-            onClick={() => setDark(d => !d)}
-            className="ml-2 sm:ml-4 p-2 rounded-full bg-gray-200 hover:bg-gray-300 dark:bg-gray-700 dark:hover:bg-gray-600 transition text-2xl shadow-md hover:scale-110 duration-200 flex items-center justify-center"
-            title={dark ? "Light mode" : "Dark mode"}
-            style={{ transition: "background 0.2s, transform 0.2s" }}
-          >
-            {dark ? <MdOutlineLightMode size={32} /> : <MdOutlineDarkMode size={32} />}
-          </button>
-          <button
-            className="ml-2 sm:ml-4 p-2 rounded-full bg-gray-200 hover:bg-gray-300 dark:bg-gray-700 dark:hover:bg-gray-600 transition text-2xl shadow-md flex items-center justify-center"
-            title="Languages"
-            style={{ transition: "background 0.2s, transform 0.2s" }}
-          >
-            <IoLanguageOutline size={28} />
-          </button>
-          <button
-            className="ml-2 sm:ml-4 p-2 rounded-full bg-gray-200 hover:bg-gray-300 dark:bg-gray-700 dark:hover:bg-gray-600 transition text-2xl shadow-md flex items-center justify-center"
-            title="History"
-            style={{ transition: "background 0.2s, transform 0.2s" }}
-            onClick={() => setHistoryOpen(true)}
-          >
-            <LuHistory size={28} />
-          </button>
-        </nav>
+          <nav className="flex gap-4 sm:gap-6 items-center">
+            <button
+              onClick={() => setDark(d => !d)}
+              className="p-2 rounded-full bg-gray-200 hover:bg-gray-300 dark:bg-gray-700 dark:hover:bg-gray-600 transition text-2xl shadow-md hover:scale-110 duration-200 flex items-center justify-center"
+              title={dark ? t('header.lightMode') : t('header.darkMode')}
+              style={{ transition: "background 0.2s, transform 0.2s" }}
+            >
+              {dark ? <MdOutlineLightMode size={32} /> : <MdOutlineDarkMode size={32} />}
+            </button>
+            <button
+              className="p-2 rounded-full bg-gray-200 hover:bg-gray-300 dark:bg-gray-700 dark:hover:bg-gray-600 transition text-2xl shadow-md flex items-center justify-center relative"
+              title={t('header.languages')}
+              style={{ transition: "background 0.2s, transform 0.2s" }}
+              onClick={() => setLanguageDropdownOpen(!languageDropdownOpen)}
+            >
+              <IoLanguageOutline size={28} />
+              {languageDropdownOpen && (
+                <div className="absolute top-full right-0 mt-2 w-48 bg-white dark:bg-gray-800 rounded-lg shadow-lg py-2 z-50 border border-gray-200 dark:border-gray-700">
+                  {LANGUAGE_OPTIONS.map(opt => (
+                    <button
+                      key={opt.value}
+                      className={`w-full px-4 py-2 text-left hover:bg-gray-100 dark:hover:bg-gray-700 flex items-center gap-2 ${
+                        language === opt.value ? 'bg-blue-50 dark:bg-blue-900' : ''
+                      }`}
+                      onClick={() => handleLanguageChange(opt.value)}
+                    >
+                      <span className="text-xl">{opt.icon}</span>
+                      <span>{opt.label}</span>
+                    </button>
+                  ))}
+                </div>
+              )}
+            </button>
+            <button
+              className="p-2 rounded-full bg-gray-200 hover:bg-gray-300 dark:bg-gray-700 dark:hover:bg-gray-600 transition text-2xl shadow-md flex items-center justify-center"
+              title={t('header.history')}
+              style={{ transition: "background 0.2s, transform 0.2s" }}
+              onClick={() => setHistoryOpen(true)}
+            >
+              <LuHistory size={28} />
+            </button>
+          </nav>
+        </div>
       </header>
       {/* Main Layout */}
       <div
@@ -514,10 +558,8 @@ export default function App() {
         <div className="flex flex-col lg:flex-row w-full max-w-[1600px] mx-auto gap-8 px-2 sm:px-4 md:px-8 py-6">
           {/* Left: Form */}
           <section className="w-full lg:w-[46%] flex flex-col justify-center items-center">
-            <div className="bg-white dark:bg-gray-900 dark:text-gray-100 rounded-2xl shadow-xl w-full max-w-2xl p-4 sm:p-6 md:p-10 space-y-6 sm:space-y-8 animate-fade-in transition-all duration-300 hover:shadow-2xl">
-              <h2 className="text-xl sm:text-2xl font-bold mb-2 sm:mb-4 flex items-center gap-2">
-                <span role="img" aria-label="form"></span> Generate Your Cover Letter
-              </h2>
+            <div className="form-container">
+              <h2 className="form-title">{t('form.title')}</h2>
               <div
                 className={`cv-upload-container w-full border-2 border-dashed rounded-md p-4 sm:p-6 flex flex-col items-center justify-center cursor-pointer transition focus:ring-2 focus:ring-blue-300
                   ${resumeFile ? "border-green-400 bg-green-50" : "border-gray-300"}`}
@@ -537,7 +579,7 @@ export default function App() {
                   )) {
                     setResumeFile(file);
                   } else {
-                    toast.error("Please upload a PDF or image file (JPG, PNG, JPEG).");
+                    toast.error(t('form.resumeUpload.error'));
                   }
                 }}
                 onClick={() => document.getElementById("resume-upload").click()}
@@ -557,7 +599,7 @@ export default function App() {
                     )) {
                       setResumeFile(file);
                     } else {
-                      toast.error("Please upload a PDF or image file (JPG, PNG, JPEG).");
+                      toast.error(t('form.resumeUpload.error'));
                     }
                   }}
                 />
@@ -566,34 +608,34 @@ export default function App() {
                   {resumeFile ? (
                     <span className="text-green-700">{resumeFile.name}</span>
                   ) : (
-                    <>Drag & drop your CV (PDF or Image) here, or <span className="underline text-blue-600">browse</span></>
+                    t('form.resumeUpload.dragDrop')
                   )}
                 </span>
               </div>
               <div>
-                <label className="block mb-2 font-semibold text-base sm:text-lg">Job Description</label>
+                <label className="block mb-2 font-semibold text-base sm:text-lg">{t('form.jobDescription.label')}</label>
                 <textarea
                   rows={Math.max(6, Math.min(12, Math.ceil(jobDescription.length / 80)))}
                   value={jobDescription}
                   onChange={e => setJobDescription(e.target.value)}
                   className="w-full p-3 border rounded-lg focus:ring-2 focus:ring-blue-300 resize-y min-h-[120px] transition text-sm sm:text-base"
-                  placeholder="Paste the job description here..."
+                  placeholder={t('form.jobDescription.placeholder')}
                   style={{ fontFamily: "'Inter', 'Poppins', 'Roboto', sans-serif" }}
                 ></textarea>
                 <div className="flex justify-between items-center mt-1 text-xs sm:text-sm">
                   <span className="text-gray-500">
-                    {jobDescription.length} characters
+                    {jobDescription.length} {t('form.jobDescription.characters')}
                   </span>
                 </div>
                 {jobTitle && !jobTitleEdit && (
                   <div className="my-2 p-2 bg-green-50 border border-green-200 rounded text-green-800 text-sm flex items-center gap-2">
                     <span>
-                      We detected this job title: <b>{jobTitle}</b> —{" "}
+                      {t('form.jobDescription.detectedTitle')} <b>{jobTitle}</b> —{" "}
                       <span
                         className="underline cursor-pointer"
                         onClick={() => setJobTitleEdit(true)}
                       >
-                        click to edit if it's not right
+                        {t('form.jobDescription.editTitle')}
                       </span>
                     </span>
                   </div>
@@ -627,12 +669,12 @@ export default function App() {
                 {companyName && !companyNameEdit && (
                   <div className="my-2 p-2 bg-yellow-50 border border-yellow-200 rounded text-yellow-800 text-sm flex items-center gap-2">
                     <span>
-                      We detected this company: <b>{companyName}</b> —{" "}
+                      {t('form.jobDescription.detectedCompany')} <b>{companyName}</b> —{" "}
                       <span
                         className="underline cursor-pointer"
                         onClick={() => setCompanyNameEdit(true)}
                       >
-                        click to edit if it's not right
+                        {t('form.jobDescription.editCompany')}
                       </span>
                     </span>
                   </div>
@@ -664,18 +706,17 @@ export default function App() {
                   </div>
                 )}
               </div>
-              {/* Language Selector */}
-              <div className="mb-4">
-                <label className="block mb-2 font-semibold text-base sm:text-lg">Select Language</label>
+              {/* Cover Letter Language Selector */}
+              <div>
+                <label className="block mb-2 font-semibold text-base sm:text-lg">{t('form.coverLetterLanguage.label')}</label>
                 <select
                   value={language}
-                  onChange={e => setLanguage(e.target.value)}
-                  className="w-full border rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-300 transition bg-white dark:bg-gray-800 dark:text-gray-100"
-                  style={{ fontFamily: "'Inter', 'Poppins', 'Roboto', sans-serif" }}
+                  onChange={(e) => setLanguage(e.target.value)}
+                  className="w-full p-3 border rounded-lg focus:ring-2 focus:ring-blue-300 transition text-sm sm:text-base bg-white dark:bg-gray-800 dark:text-gray-100"
                 >
-                  {LANGUAGE_OPTIONS.map(opt => (
-                    <option key={opt.value} value={opt.value}>
-                      {opt.icon} {opt.label}
+                  {LANGUAGE_OPTIONS.map((lang) => (
+                    <option key={lang.value} value={lang.value} className="flex items-center gap-2">
+                      {lang.icon} {lang.label}
                     </option>
                   ))}
                 </select>
@@ -702,10 +743,10 @@ export default function App() {
                         d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"
                       />
                     </svg>
-                    Generating...
+                    {t('form.generate.generating')}
                   </span>
                 ) : (
-                  <span>Generate Cover Letter</span>
+                  <span>{t('form.generate.generate')}</span>
                 )}
               </button>
             </div>
@@ -721,7 +762,7 @@ export default function App() {
           >
             <div className="bg-white dark:bg-gray-900 dark:text-gray-100 rounded-2xl shadow-xl w-full max-w-5xl p-4 sm:p-6 md:p-10 animate-slide-in space-y-4 min-h-[320px] sm:min-h-[400px] flex flex-col transition-all duration-300 hover:shadow-2xl">
               <h2 className="text-lg sm:text-2xl font-bold mb-2 text-center max-w-4xl mx-auto" style={{ fontFamily: "'Inter', 'Poppins', 'Roboto', sans-serif" }}>
-                Tailored Just for You
+                {t('output.title')}
               </h2>
               {coverLetter ? (
                 <>
@@ -740,7 +781,7 @@ export default function App() {
                       />
                       {prevLetter && (
                         <div className="mt-4 text-sm text-gray-500">
-                          <span className="font-semibold" style={{ fontSize: "1.1em" }}>Previous version:</span>
+                          <span className="font-semibold" style={{ fontSize: "1.1em" }}>{t('previousVersion')}:</span>
                           <pre
                             className="whitespace-pre-wrap bg-gray-100 dark:bg-gray-800 rounded p-2 mt-1 border max-h-40 overflow-y-auto"
                             style={{
@@ -769,13 +810,13 @@ export default function App() {
                             }
                           }}
                         >
-                          Save
+                          {t('save')}
                         </button>
                         <button
                           className="bg-gray-200 hover:bg-gray-300 text-gray-800 px-4 py-2 rounded-lg font-semibold transition"
                           onClick={() => setEditMode(false)}
                         >
-                          Cancel
+                          {t('cancel')}
                         </button>
                       </div>
                     </>
@@ -802,14 +843,14 @@ export default function App() {
                             setCopied(true);
                             setTimeout(() => setCopied(false), 1000);
                           }}
-                          title={copied ? "Copied!" : "Copy to Clipboard"}
+                          title={copied ? t('copied') : t('copyClipboard')}
                         >
                           {copied ? <MdOutlineDone /> : <BiCopy />}
                         </button>
                         <button
                           className="mt-2 ml-2 text-blue-500 underline text-base flex items-center transition-transform"
                           onClick={() => setExpanded((e) => !e)}
-                          title={expanded ? "Collapse" : "Expand"}
+                          title={expanded ? t('collapse') : t('expand')}
                         >
                           {expanded ? (
                             <span className="transition-transform duration-200 rotate-180"><MdExpandMore size={22} /></span>
@@ -823,104 +864,31 @@ export default function App() {
                             setEditedLetter(coverLetter);
                             setEditMode(true);
                           }}
-                          title="Edit"
+                          title={t('edit')}
                         >
                           <MdOutlineEdit />
                         </button>
                       </div>
                     </>
                   )}
-                  {/* --- Job-Fit Score Card --- */}
+                  {/* Job-Fit Score Card */}
                   {jobFitScore && (
-                    <div
-                      className={`mt-4 mx-auto max-w-lg w-full rounded-xl border-2 p-5 flex flex-col items-center text-center shadow transition bg-white dark:bg-gray-900 ${SCORE_COLORS[jobFitScore.border_color]}`}
-                    >
+                    <div className={`mt-4 mx-auto max-w-lg w-full rounded-xl border-2 p-5 flex flex-col items-center text-center shadow transition bg-white dark:bg-gray-900 ${SCORE_COLORS[jobFitScore.border_color]}`}>
                       <div className="flex items-center justify-center gap-2 mb-2">
                         <span className="text-3xl">{jobFitScore.match_icon}</span>
-                        <span className="text-lg font-bold">Job-Fit Score:</span>
-                        <span className="text-4xl font-extrabold ml-2">{jobFitScore.score}%</span>
+                        <span className={`text-lg font-bold ${language === 'ar' ? 'text-xl' : ''}`}>{t('jobFitScore')}:</span>
+                        <span className={`text-4xl font-extrabold ml-2 ${language === 'ar' ? 'text-5xl' : ''}`}>{jobFitScore.score}%</span>
                       </div>
-                      <div className="text-base font-semibold mb-2">{jobFitScore.match_level}</div>
-                      {jobFitScore.explanation && Array.isArray(jobFitScore.explanation) && (
-                        <>
-                          {jobFitScore.explanation.map((line, idx) => (
-                            <div key={idx} className="text-sm mb-1">{line}</div>
-                          ))}
-                        </>
-                      )}
+                      <div className={`text-base font-semibold mb-2 ${language === 'ar' ? 'text-lg' : ''}`}>{t(`jobFit.${jobFitScore.match_level}`)}</div>
                     </div>
                   )}
-                  {/* --- Keyword Match Details --- */}
-                  {jobFitScore && jobFitScore.keywords && (
-                    <div className="mt-4 w-full max-w-md mx-auto bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-700 shadow p-4 space-y-4">
-                      <div className="flex items-center gap-2 mb-2">
-                        <MdInfoOutline className="text-blue-500" />
-                        <span className="text-sm text-gray-700 dark:text-gray-200">
-                          Matched keywords are found in your resume and the job post. Missing ones are what employers might expect but don't appear in your resume.
-                        </span>
-                      </div>
-                      <div className="w-full mb-2">
-                        <div className="h-3 w-full bg-gray-200 dark:bg-gray-800 rounded-full overflow-hidden">
-                          <div
-                            className={`h-3 rounded-full transition-all duration-500 ${
-                              jobFitScore.score >= 75
-                                ? "bg-green-500"
-                                : jobFitScore.score >= 50
-                                ? "bg-yellow-400"
-                                : "bg-red-500"
-                            }`}
-                            style={{ width: `${jobFitScore.score}%` }}
-                          ></div>
-                        </div>
-                        <div className="text-xs text-right text-gray-500 mt-1">{jobFitScore.score}% match</div>
-                      </div>
-                      <div className="flex flex-col sm:flex-row gap-4">
-                        <div className="flex-1 min-w-[120px]">
-                          <div className="flex items-center gap-1 font-semibold text-green-600 mb-1">
-                            <MdCheckCircle className="text-green-500" /> Matched Keywords
-                          </div>
-                          <div className="max-h-32 overflow-y-auto pr-1">
-                            {jobFitScore.keywords.matched.length > 0 ? (
-                              <ul className="space-y-1">
-                                {jobFitScore.keywords.matched.map((kw, i) => (
-                                  <li key={i} className="flex items-center gap-1 text-green-700 text-sm">
-                                    <MdCheckCircle className="text-green-400" /> {kw}
-                                  </li>
-                                ))}
-                              </ul>
-                            ) : (
-                              <div className="text-xs text-gray-400">No matches</div>
-                            )}
-                          </div>
-                        </div>
-                        <div className="flex-1 min-w-[120px]">
-                          <div className="flex items-center gap-1 font-semibold text-red-600 mb-1">
-                            <MdErrorOutline className="text-red-500" /> Missing Keywords
-                          </div>
-                          <div className="max-h-32 overflow-y-auto pr-1">
-                            {jobFitScore.keywords.missing.length > 0 ? (
-                              <ul className="space-y-1">
-                                {jobFitScore.keywords.missing.map((kw, i) => (
-                                  <li key={i} className="flex items-center gap-1 text-red-700 text-sm">
-                                    <MdErrorOutline className="text-red-400" /> {kw}
-                                  </li>
-                                ))}
-                              </ul>
-                            ) : (
-                              <div className="text-xs text-gray-400">None missing</div>
-                            )}
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  )}
-                  {/* --- Requirement Match Details --- */}
+                  {/* Requirement Match Details */}
                   {jobFitScore && jobFitScore.requirements && (
                     <div className="mt-4 w-full max-w-md mx-auto bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-700 shadow p-4 space-y-4">
                       <div className="flex items-center gap-2 mb-2">
                         <MdInfoOutline className="text-blue-500" />
                         <span className="text-sm text-gray-700 dark:text-gray-200">
-                          Matched requirements are found in your resume and the job post. Missing ones are what employers might expect but don't appear in your resume.
+                          {t('jobFit.requirementsExplanation')}
                         </span>
                       </div>
                       <div className="w-full mb-2">
@@ -936,7 +904,7 @@ export default function App() {
                             style={{ width: `${jobFitScore.score}%` }}
                           ></div>
                         </div>
-                        <div className="text-xs text-right text-gray-500 mt-1">{jobFitScore.score}% match</div>
+                        <div className="text-xs text-right text-gray-500 mt-1">{jobFitScore.score}% {t('jobFit.match')}</div>
                       </div>
                       <div className="flex flex-col sm:flex-row gap-4">
                         <div className="flex-1 min-w-[120px] max-h-40 overflow-y-auto pr-1">
@@ -959,11 +927,11 @@ export default function App() {
                       </div>
                     </div>
                   )}
-                  {/* --- Cover Letter Rating --- */}
+                  {/* Cover Letter Rating */}
                   {coverLetter && rating && (
                     <div className="mt-6 flex flex-col items-center justify-center bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-700 shadow p-4 max-w-md mx-auto">
                       <div className="flex items-center gap-2 mb-1">
-                        <span className="text-lg font-semibold">Cover Letter Rating:</span>
+                        <span className="text-lg font-semibold">{t('coverLetterRating.title')}:</span>
                         <span className="flex items-center">
                           {[...Array(5)].map((_, i) => (
                             <FaStar
@@ -975,19 +943,25 @@ export default function App() {
                         </span>
                         <span className="ml-2 text-base font-bold text-blue-700">{rating.score}/100</span>
                       </div>
-                      <div className="text-sm text-gray-700 dark:text-gray-200 text-center">{rating.message}</div>
+                      <div className="text-sm text-gray-700 dark:text-gray-200 text-center">
+                        {rating.stars === 5 && t('coverLetterRating.ratingMessage.excellent')}
+                        {rating.stars === 4 && t('coverLetterRating.ratingMessage.great')}
+                        {rating.stars === 3 && t('coverLetterRating.ratingMessage.good')}
+                        {rating.stars === 2 && t('coverLetterRating.ratingMessage.fair')}
+                        {rating.stars === 1 && t('coverLetterRating.ratingMessage.poor')}
+                      </div>
                       <button
-                        className="mt-3 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-semibold transition text-sm shadow active:scale-95"
+                        className="mt-3 p-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-semibold transition text-sm shadow active:scale-95 flex items-center justify-center"
                         onClick={() => handleGenerate(true)}
-                        title="Regenerate for a higher score"
+                        title={t('output.actions.regenerate')}
                       >
-                        Regenerate for a higher score
+                        <BsArrowRepeat size={24} />
                       </button>
                     </div>
                   )}
                 </>
               ) : (
-                <div className="text-gray-400 text-center mt-12 text-sm sm:text-base">Your generated cover letter will appear here.</div>
+                <div className="text-gray-400 text-center mt-12 text-sm sm:text-base">{t('output.empty')}</div>
               )}
             </div>
           </section>
@@ -998,7 +972,7 @@ export default function App() {
       </div>
       {/* Footer */}
       <footer className="app-footer dark:app-footer-dark">
-        © 2025 Coverly.ai. All rights reserved.
+        {t('footer.copyright')}
       </footer>
       {/* History Modal */}
       {historyOpen && <HistoryModal />}
