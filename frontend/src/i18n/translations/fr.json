@@ -23,7 +23,7 @@
       "editCompany": "cliquez pour modifier si ce n'est pas correct"
     },
     "coverLetterLanguage": {
-      "label": "Langue de la Lettre de Motivation"
+      "label": "Langue"
     },
     "tone": {
       "label": "Ton",
@@ -106,7 +106,13 @@
     "considerTailoring": "Envisagez d'adapter votre CV plus précisément à ce poste 💪",
     "goodStart": "Bon début ! Vous pourriez améliorer votre compatibilité en mettant en valeur plus d'expérience pertinente 🎯",
     "greatMatch": "Excellente compatibilité ! Votre expérience correspond bien à ce poste 🎉",
-    "requirementsExplanation": "Les exigences correspondantes sont présentes dans votre CV et l'offre d'emploi. Les exigences manquantes sont celles que les employeurs pourraient attendre mais qui n'apparaissent pas dans votre CV"
+    "requirementsExplanation": "Les exigences correspondantes sont présentes dans votre CV et l'offre d'emploi. Les exigences manquantes sont celles que les employeurs pourraient attendre mais qui n'apparaissent pas dans votre CV",
+    "match": "correspondance",
+    "skills": "Compétences",
+    "tools": "Outils",
+    "certifications": "Certifications",
+    "education": "Formation",
+    "experience": "Expérience"
   },
   "coverLetterRating": {
     "title": "Évaluation de la Lettre de Motivation",

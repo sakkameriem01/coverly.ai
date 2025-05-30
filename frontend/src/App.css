@@ -24,7 +24,7 @@
   --color-card: #FFF;
   --color-text: #1A1A1A;
   --color-text-secondary: #555;
-  --color-accent-gold: #CBAE7D;
+  --color-accent-gold: #CBAE7D;  /* Restored gold for yellow matches */
   --color-accent-blue: #3B82F6;
   --color-success: #7ED6A5;
   --color-error: #E87C7C;
@@ -36,11 +36,26 @@
   --color-card-dark: #1E1F25;
   --color-text-dark: #F1F1F1;
   --color-text-secondary-dark: #B0B0B0;
-  --color-accent-gold-dark: #CBAE7D;
+  --color-accent-gold-dark: #CBAE7D;  /* Restored gold for yellow matches */
   --color-accent-blue-dark: #5DADE2;
   --color-success-dark: #7ED6A5;
   --color-error-dark: #FF6B6B;
   --color-divider-dark: #2C2F36;
+
+  --color-primary: #2563eb;
+  --color-primary-dark: #1d4ed8;
+  --color-accent: #2C2F36;
+  --color-accent-dark: #4B5563;
+  --color-background: #ffffff;
+  --color-background-dark: #1a1a1a;
+  --color-border: #e5e7eb;
+  --color-border-dark: #374151;
+  --color-input-bg: #ffffff;
+  --color-input-bg-dark: #2d3748;
+  --color-card-bg: #ffffff;
+  --color-card-bg-dark: #1f2937;
+  --color-hover: #f3f4f6;
+  --color-hover-dark: #374151;
 }
 
 /* --- Base Styles --- */
@@ -62,11 +77,11 @@ h1, h2, h3, h4, h5, h6,
 
 /* --- Layout --- */
 .app-header {
-  background: rgba(255, 255, 255, 0.8);
+  background: var(--color-card-bg);
   padding: 1.5rem 2rem;
   min-height: 140px;
   box-sizing: border-box;
-  border-bottom: 1px solid var(--color-divider);
+  border-bottom: 1px solid var(--color-border);
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
 }
@@ -75,10 +90,10 @@ h1, h2, h3, h4, h5, h6,
   border-bottom: 1px solid var(--color-divider-dark);
 }
 .app-footer {
-  background: rgba(240, 240, 245, 0.85);
-  color: #444;
+  background: var(--color-card-bg);
+  color: var(--color-text);
   font-size: 1rem;
-  border-top: 1px solid var(--color-divider);
+  border-top: 1px solid var(--color-border);
   width: 100%;
   text-align: center;
   padding: 1rem 0;
@@ -219,7 +234,7 @@ button:hover, .btn:hover, input[type="button"]:hover, input[type="submit"]:hover
 .tone-pill:hover {
   background: #E6EFFF;
   color: var(--color-accent-blue);
-  border-color: #2C2F36; /* dark gray */
+  border-color: var(--color-accent-gold);
   transform: scale(1.01);
 }
 .dark .tone-pill {
@@ -390,18 +405,25 @@ html {
   vertical-align: middle;
 }
 .progress-ring__circle {
-  stroke: #C6A469;
+  stroke: #2C2F36;  /* Default black */
   stroke-width: 6;
   fill: none;
   transition: stroke-dasharray 0.3s;
 }
+
+/* Yellow match level styles */
+.jobfit-score-card[data-match-level="yellow"] .progress-ring__circle {
+  stroke: var(--color-accent-gold);  /* Gold for yellow matches */
+}
+
 .progress-ring__bg {
   stroke: #EAEAEA;
   stroke-width: 6;
   fill: none;
 }
+
 .jobfit-score-card {
-  background: #FFF9EC !important; /* pastel gold */
+  background: #F4F4F4 !important;
   border-radius: 16px;
   border: none !important;
   box-shadow: 0px 2px 10px rgba(0,0,0,0.05);
@@ -411,16 +433,28 @@ html {
   align-items: center;
   gap: 1.5rem;
 }
+
+/* Yellow match level card styles */
+.jobfit-score-card[data-match-level="yellow"] {
+  background: #FFF9EC !important;  /* Pastel gold background for yellow matches */
+}
+
 .jobfit-score-card .score-label {
   font-family: var(--font-heading);
   font-size: 1.2rem;
   font-weight: 600;
   color: #333;
 }
+
 .jobfit-score-card .score-value {
   font-size: 2rem;
   font-weight: 700;
-  color: #C6A469;
+  color: #2C2F36;  /* Default black */
+}
+
+/* Yellow match level score value */
+.jobfit-score-card[data-match-level="yellow"] .score-value {
+  color: var(--color-accent-gold);  /* Gold for yellow matches */
 }
 
 /* --- Fade-in Animation --- */
@@ -497,7 +531,7 @@ input[type="submit"]:hover {
 /* Ensure top header icon buttons use dark gray border on hover, not gold */
 .app-header button:hover,
 .app-header .btn:hover {
-  border-color: #2C2F36 !important;
+  border-color: var(--color-accent-gold) !important;
 }
 
 /* If you use Tailwind's border classes, also override those */
@@ -506,13 +540,20 @@ input[type="submit"]:hover {
 .app-header button:focus,
 .app-header .btn:focus {
   --tw-border-opacity: 1 !important;
-  border-color: #2C2F36 !important;
+  border-color: var(--color-accent-gold) !important;
+}
+
+.dark .app-header button:hover,
+.dark .app-header .btn:hover,
+.dark .app-header button:focus,
+.dark .app-header .btn:focus {
+  border-color: var(--color-accent-gold-dark) !important;
 }
 
 /* History Panel Styles */
 .history-panel {
   position: relative;
-  background: var(--color-card);
+  background: var(--color-card-bg);
   border-radius: 1rem;
   box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
   max-width: 42rem;
@@ -663,9 +704,24 @@ input[type="submit"]:hover {
   transform: scale(0.95);
 }
 
-/* Form Elements */
+/* Form title */
+.form-title {
+  font-size: 1.25rem;
+  font-weight: 700;
+  margin-bottom: 1.5rem;
+  color: var(--color-text);
+  text-align: center;
+  transition: color 0.3s ease;
+}
+
+.dark .form-title {
+  color: #ffffff;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+}
+
+/* Form container */
 .form-container {
-  background: var(--color-card);
+  background: var(--color-card-bg);
   border-radius: 1rem;
   box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
   width: 100%;
@@ -673,6 +729,15 @@ input[type="submit"]:hover {
   padding: 1.5rem;
   animation: fadeIn 0.7s;
   transition: all 0.3s;
+  border: 1px solid var(--color-border);
+  color: var(--color-text);
+}
+
+.dark .form-container {
+  background: var(--color-card-bg-dark);
+  border-color: var(--color-border-dark);
+  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.3);
+  color: #ffffff;
 }
 
 .form-container > * {
@@ -681,12 +746,6 @@ input[type="submit"]:hover {
 
 .form-container > *:last-child {
   margin-bottom: 0;
-}
-
-.form-title {
-  font-size: 1.25rem;
-  font-weight: 700;
-  margin-bottom: 1.5rem;
 }
 
 .cv-upload-container {
@@ -704,18 +763,320 @@ textarea, select {
 
 /* Responsive adjustments */
 @media (min-width: 640px) {
-  .form-container {
-    padding: 2rem;
-  }
-  
   .form-title {
     font-size: 1.5rem;
-    margin-bottom: 2rem;
   }
 }
 
 @media (min-width: 768px) {
-  .form-container {
-    padding: 2.5rem;
+  .form-title {
+    font-size: 1.75rem;
+  }
+}
+
+/* History Panel Action Buttons */
+.history-panel button[title="Rename"],
+.history-panel button[title="Delete"],
+.history-panel button[title="Download as PDF"] {
+  transition: all 0.2s ease;
+}
+
+.history-panel button[title="Rename"]:hover,
+.history-panel button[title="Delete"]:hover,
+.history-panel button[title="Download as PDF"]:hover {
+  background-color: #2C2F36 !important;
+  color: white !important;
+}
+
+.dark .history-panel button[title="Rename"]:hover,
+.dark .history-panel button[title="Delete"]:hover,
+.dark .history-panel button[title="Download as PDF"]:hover {
+  background-color: #4B5563 !important;
+  color: white !important;
+}
+
+/* Ensure the icon colors remain visible on hover */
+.history-panel button[title="Rename"]:hover svg,
+.history-panel button[title="Delete"]:hover svg,
+.history-panel button[title="Download as PDF"]:hover svg {
+  color: white !important;
+}
+
+/* Scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--color-card-bg);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--color-border);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--color-hover);
+}
+
+/* Placeholder text */
+::placeholder {
+  color: #9ca3af;
+}
+
+.dark ::placeholder {
+  color: #6b7280;
+}
+
+/* Links */
+a {
+  color: var(--color-primary);
+  text-decoration: none;
+  transition: color 0.2s;
+}
+
+a:hover {
+  color: var(--color-primary-dark);
+}
+
+/* Labels */
+label {
+  color: var(--color-text);
+  font-weight: 500;
+  margin-bottom: 0.5rem;
+  display: block;
+}
+
+/* Helper text */
+.helper-text {
+  color: #6b7280;
+  font-size: 0.875rem;
+  margin-top: 0.25rem;
+}
+
+.dark .helper-text {
+  color: #e5e7eb;
+}
+
+/* Error messages */
+.error-message {
+  color: #ef4444;
+  font-size: 0.875rem;
+  margin-top: 0.25rem;
+}
+
+.dark .error-message {
+  color: #f87171;
+}
+
+/* Success messages */
+.success-message {
+  color: #10b981;
+  font-size: 0.875rem;
+  margin-top: 0.25rem;
+}
+
+.dark .success-message {
+  color: #34d399;
+}
+
+/* Loading spinner */
+.loading-spinner {
+  border: 3px solid var(--color-border);
+  border-top-color: var(--color-primary);
+  border-radius: 50%;
+  width: 24px;
+  height: 24px;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* Responsive adjustments */
+@media (max-width: 640px) {
+  .form-container,
+  .history-panel {
+    padding: 1rem;
+  }
+  
+  .form-title,
+  .history-title {
+    font-size: 1.25rem;
+  }
+}
+
+/* Form labels */
+.dark .form-container label {
+  color: #ffffff;
+}
+
+/* Form inputs and textareas */
+.dark .form-container input,
+.dark .form-container textarea,
+.dark .form-container select {
+  color: #ffffff;
+  background-color: var(--color-input-bg-dark);
+  border-color: var(--color-border-dark);
+}
+
+/* Form buttons */
+.dark .form-container button {
+  color: #ffffff;
+  background-color: var(--color-primary);
+  border-color: var(--color-border-dark);
+}
+
+.dark .form-container button:hover {
+  background-color: var(--color-primary-dark);
+}
+
+/* CV upload container */
+.dark .cv-upload-container {
+  background: var(--color-card-bg-dark) !important;
+  border-color: var(--color-border-dark);
+  color: #ffffff;
+}
+
+.dark .cv-upload-container span {
+  color: #ffffff;
+}
+
+/* Tone selector */
+.dark .tone-pill {
+  color: #ffffff;
+  background: var(--color-card-bg-dark);
+  border-color: var(--color-border-dark);
+}
+
+.dark .tone-pill:hover,
+.dark .tone-pill.selected {
+  background: var(--color-primary);
+  color: #ffffff;
+  border-color: var(--color-primary);
+}
+
+/* Output section styling */
+.output-section {
+  background: var(--color-card-bg);
+  border-radius: 1rem;
+  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+  width: 100%;
+  max-width: 42rem;
+  padding: 1.5rem;
+  animation: fadeIn 0.7s;
+  transition: all 0.3s;
+  border: 1px solid var(--color-border);
+  color: var(--color-text);
+}
+
+.dark .output-section {
+  background: var(--color-card-bg-dark);
+  border-color: var(--color-border-dark);
+  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.3);
+  color: var(--color-text-dark);
+}
+
+.output-title {
+  font-size: 1.25rem;
+  font-weight: 700;
+  margin-bottom: 1.5rem;
+  color: var(--color-text);
+  text-align: center;
+  transition: color 0.3s ease;
+  font-family: var(--font-heading);
+}
+
+.dark .output-title {
+  color: var(--color-text-dark);
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+}
+
+.output-content {
+  background: var(--color-card-bg);
+  border-radius: 0.75rem;
+  border: 1px solid var(--color-border);
+  padding: 1rem;
+  color: var(--color-text);
+  margin-bottom: 0.25rem;
+}
+
+.dark .output-content {
+  background: var(--color-card-bg-dark);
+  border-color: var(--color-border-dark);
+  color: var(--color-text-dark);
+}
+
+.output-actions {
+  display: flex;
+  justify-content: center;
+  gap: 1rem;
+  margin-top: 0.5rem;
+  padding-top: 0.25rem;
+}
+
+.output-actions button {
+  background: none;
+  border: none;
+  padding: 0;
+  color: var(--color-accent-blue);
+  transition: color 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.output-actions button:hover {
+  color: var(--color-primary-dark);
+  transform: none;
+  background: none;
+}
+
+.output-actions button svg {
+  width: 24px;
+  height: 24px;
+}
+
+/* Remove any existing button styles that might interfere */
+.output-actions button:not(:hover) {
+  background: none;
+  border: none;
+  box-shadow: none;
+}
+
+.dark .output-actions button {
+  color: var(--color-accent-blue-dark);
+}
+
+.dark .output-actions button:hover {
+  color: var(--color-primary-dark);
+}
+
+/* Empty state */
+.output-empty {
+  color: var(--color-text-secondary);
+  text-align: center;
+  padding: 2rem;
+}
+
+.dark .output-empty {
+  color: var(--color-text-secondary-dark);
+}
+
+/* Responsive adjustments */
+@media (min-width: 640px) {
+  .output-title {
+    font-size: 1.5rem;
+  }
+}
+
+@media (min-width: 768px) {
+  .output-title {
+    font-size: 1.75rem;
   }
 }

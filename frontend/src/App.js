@@ -121,9 +121,9 @@ const ICONS = {
 };
 
 const LANGUAGE_OPTIONS = [
-  { value: "en", label: "English", icon: "🇺🇸" },
-  { value: "fr", label: "Français", icon: "🇫🇷" },
-  { value: "ar", label: "العربية", icon: "🇸🇦" }
+  { value: "en", label: "English" },
+  { value: "fr", label: "Français" },
+  { value: "ar", label: "العربية" }
 ];
 
 function getCoverLetterScore(jobDescription, coverLetter) {
@@ -220,6 +220,10 @@ export default function App() {
   const [isGenerating, setIsGenerating] = useState(false);
   const [error, setError] = useState(null);
   const [languageDropdownOpen, setLanguageDropdownOpen] = useState(false);
+  const [editJobTypeId, setEditJobTypeId] = useState(null);
+  const [editJobTypeValue, setEditJobTypeValue] = useState("");
+  const [editCompanyId, setEditCompanyId] = useState(null);
+  const [editCompanyValue, setEditCompanyValue] = useState("");
 
   // --- Derived ---
   const keywords = extractKeywords(jobDescription);
@@ -349,7 +353,7 @@ export default function App() {
     return Object.entries(grouped).map(([cat, items]) => (
       <div key={cat} className="mb-2">
         <div className={`font-semibold mb-1 flex items-center gap-1 ${color}`}>
-          {icon} {cat}
+          {icon} {t(`jobFit.${cat.toLowerCase()}`)}
         </div>
         <ul className="space-y-1">
           {items.map((req, i) => (
@@ -376,9 +380,9 @@ export default function App() {
   function HistoryModal() {
     return (
       <div className="fixed inset-0 bg-black bg-opacity-40 z-50 flex items-center justify-center">
-        <div className="history-panel">
+        <div className="history-panel relative">
           <button
-            className="cancel-button"
+            className="absolute top-4 right-4 p-2 rounded-full hover:bg-gray-200 dark:hover:bg-gray-700 transition"
             onClick={() => setHistoryOpen(false)}
             title={t('history.actions.cancel')}
           >
@@ -400,9 +404,123 @@ export default function App() {
                     </div>
                     <div className="flex gap-3 mb-1 text-xs">
                       <span className="px-2 py-1 bg-blue-100 text-blue-700 rounded">{entry.tone}</span>
-                      <span className="px-2 py-1 bg-green-100 text-green-700 rounded">{entry.jobType}</span>
-                      {entry.company && (
-                        <span className="px-2 py-1 bg-yellow-100 text-yellow-700 rounded">{entry.company}</span>
+                      {editJobTypeId === entry.id ? (
+                        <div className="flex items-center gap-2">
+                          <input
+                            className="border rounded px-2 py-1"
+                            value={editJobTypeValue}
+                            onChange={e => {
+                              e.preventDefault();
+                              setEditJobTypeValue(e.target.value);
+                            }}
+                            onKeyDown={e => {
+                              if (e.key === 'Enter') {
+                                const history = getHistory();
+                                const idx = history.findIndex(e => e.id === entry.id);
+                                if (idx !== -1) {
+                                  history[idx].jobType = editJobTypeValue;
+                                  localStorage.setItem("coverLetterHistory", JSON.stringify(history));
+                                  setHistory(history);
+                                }
+                                setEditJobTypeId(null);
+                              } else if (e.key === 'Escape') {
+                                setEditJobTypeId(null);
+                              }
+                            }}
+                            maxLength={50}
+                            autoFocus
+                          />
+                          <button
+                            className="bg-green-600 text-white px-2 py-1 rounded text-xs"
+                            onClick={() => {
+                              const history = getHistory();
+                              const idx = history.findIndex(e => e.id === entry.id);
+                              if (idx !== -1) {
+                                history[idx].jobType = editJobTypeValue;
+                                localStorage.setItem("coverLetterHistory", JSON.stringify(history));
+                                setHistory(history);
+                              }
+                              setEditJobTypeId(null);
+                            }}
+                          >
+                            {t('history.actions.save')}
+                          </button>
+                          <button
+                            className="text-gray-500 px-2 text-xs"
+                            onClick={() => setEditJobTypeId(null)}
+                          >
+                            {t('history.actions.cancel')}
+                          </button>
+                        </div>
+                      ) : (
+                        <span 
+                          className="px-2 py-1 bg-green-100 text-green-700 rounded cursor-pointer hover:bg-green-200"
+                          onClick={() => {
+                            setEditJobTypeId(entry.id);
+                            setEditJobTypeValue(entry.jobType || "");
+                          }}
+                        >
+                          {entry.jobType || t('history.addJobType')}
+                        </span>
+                      )}
+                      {editCompanyId === entry.id ? (
+                        <div className="flex items-center gap-2">
+                          <input
+                            className="border rounded px-2 py-1"
+                            value={editCompanyValue}
+                            onChange={e => {
+                              e.preventDefault();
+                              setEditCompanyValue(e.target.value);
+                            }}
+                            onKeyDown={e => {
+                              if (e.key === 'Enter') {
+                                const history = getHistory();
+                                const idx = history.findIndex(e => e.id === entry.id);
+                                if (idx !== -1) {
+                                  history[idx].company = editCompanyValue;
+                                  localStorage.setItem("coverLetterHistory", JSON.stringify(history));
+                                  setHistory(history);
+                                }
+                                setEditCompanyId(null);
+                              } else if (e.key === 'Escape') {
+                                setEditCompanyId(null);
+                              }
+                            }}
+                            maxLength={50}
+                            autoFocus
+                          />
+                          <button
+                            className="bg-yellow-600 text-white px-2 py-1 rounded text-xs"
+                            onClick={() => {
+                              const history = getHistory();
+                              const idx = history.findIndex(e => e.id === entry.id);
+                              if (idx !== -1) {
+                                history[idx].company = editCompanyValue;
+                                localStorage.setItem("coverLetterHistory", JSON.stringify(history));
+                                setHistory(history);
+                              }
+                              setEditCompanyId(null);
+                            }}
+                          >
+                            {t('history.actions.save')}
+                          </button>
+                          <button
+                            className="text-gray-500 px-2 text-xs"
+                            onClick={() => setEditCompanyId(null)}
+                          >
+                            {t('history.actions.cancel')}
+                          </button>
+                        </div>
+                      ) : (
+                        <span 
+                          className="px-2 py-1 bg-yellow-100 text-yellow-700 rounded cursor-pointer hover:bg-yellow-200"
+                          onClick={() => {
+                            setEditCompanyId(entry.id);
+                            setEditCompanyValue(entry.company || "");
+                          }}
+                        >
+                          {entry.company || t('history.addCompany')}
+                        </span>
                       )}
                     </div>
                     <div className={`text-xs text-gray-700 dark:text-gray-200 italic mb-1 ${language === 'ar' ? 'text-sm' : ''}`}>
@@ -415,7 +533,20 @@ export default function App() {
                         <input
                           className="border rounded px-2 py-1 flex-1"
                           value={renameValue}
-                          onChange={e => setRenameValue(e.target.value)}
+                          onChange={e => {
+                            e.preventDefault();
+                            setRenameValue(e.target.value);
+                          }}
+                          onKeyDown={e => {
+                            if (e.key === 'Enter') {
+                              renameLetterInHistory(entry.id, renameValue);
+                              setRenameId(null);
+                              setHistory(getHistory());
+                            } else if (e.key === 'Escape') {
+                              setRenameId(null);
+                            }
+                          }}
+                          autoFocus
                         />
                         <button
                           className="bg-blue-600 text-white px-3 py-1 rounded"
@@ -431,29 +562,19 @@ export default function App() {
                         >{t('history.actions.cancel')}</button>
                       </div>
                     ) : (
-                      <div className="flex gap-2">
+                      <div className="flex justify-center gap-4 mt-4">
                         <button
-                          className="text-blue-600 hover:bg-blue-100 rounded-full p-1 transition"
-                          onClick={() => {
-                            setRenameId(entry.id);
-                            setRenameValue(entry.name);
-                          }}
-                          title={t('history.actions.rename')}
-                        >
-                          <MdDriveFileRenameOutline size={22} />
-                        </button>
-                        <button
-                          className="text-red-600 hover:bg-red-100 rounded-full p-1 transition"
+                          className="text-blue-600 hover:text-blue-700 transition-colors"
                           onClick={() => {
                             deleteLetterFromHistory(entry.id);
                             setHistory(getHistory());
                           }}
                           title={t('history.actions.delete')}
                         >
-                          <MdOutlineDelete size={22} />
+                          <MdOutlineDelete size={24} />
                         </button>
                         <button
-                          className="text-green-600 hover:bg-green-100 rounded-full p-1 transition"
+                          className="text-green-600 hover:text-green-700 transition-colors"
                           onClick={() =>
                             downloadLetterAsPDF(
                               entry.letter,
@@ -464,7 +585,7 @@ export default function App() {
                           }
                           title={t('history.actions.download')}
                         >
-                          <MdOutlineFileDownload size={22} />
+                          <MdOutlineFileDownload size={24} />
                         </button>
                       </div>
                     )}
@@ -523,17 +644,16 @@ export default function App() {
             >
               <IoLanguageOutline size={28} />
               {languageDropdownOpen && (
-                <div className="absolute top-full right-0 mt-2 w-48 bg-white dark:bg-gray-800 rounded-lg shadow-lg py-2 z-50 border border-gray-200 dark:border-gray-700">
+                <div className="absolute top-full right-0 mt-2 w-32 bg-white dark:bg-gray-800 rounded-lg shadow-lg py-1 z-50 border border-gray-200 dark:border-gray-700">
                   {LANGUAGE_OPTIONS.map(opt => (
                     <button
                       key={opt.value}
-                      className={`w-full px-4 py-2 text-left hover:bg-gray-100 dark:hover:bg-gray-700 flex items-center gap-2 ${
+                      className={`w-full px-3 py-1.5 text-left hover:bg-gray-100 dark:hover:bg-gray-700 text-sm ${
                         language === opt.value ? 'bg-blue-50 dark:bg-blue-900' : ''
                       }`}
                       onClick={() => handleLanguageChange(opt.value)}
                     >
-                      <span className="text-xl">{opt.icon}</span>
-                      <span>{opt.label}</span>
+                      {opt.label}
                     </button>
                   ))}
                 </div>
@@ -712,11 +832,11 @@ export default function App() {
                 <select
                   value={language}
                   onChange={(e) => setLanguage(e.target.value)}
-                  className="w-full p-3 border rounded-lg focus:ring-2 focus:ring-blue-300 transition text-sm sm:text-base bg-white dark:bg-gray-800 dark:text-gray-100"
+                  className="w-full p-2 border rounded-lg focus:ring-2 focus:ring-blue-300 transition text-sm bg-white dark:bg-gray-800 dark:text-gray-100"
                 >
                   {LANGUAGE_OPTIONS.map((lang) => (
-                    <option key={lang.value} value={lang.value} className="flex items-center gap-2">
-                      {lang.icon} {lang.label}
+                    <option key={lang.value} value={lang.value}>
+                      {lang.label}
                     </option>
                   ))}
                 </select>
@@ -760,8 +880,8 @@ export default function App() {
             ref={outputRef}
             className="w-full lg:w-[54%] flex flex-col justify-center items-center"
           >
-            <div className="bg-white dark:bg-gray-900 dark:text-gray-100 rounded-2xl shadow-xl w-full max-w-5xl p-4 sm:p-6 md:p-10 animate-slide-in space-y-4 min-h-[320px] sm:min-h-[400px] flex flex-col transition-all duration-300 hover:shadow-2xl">
-              <h2 className="text-lg sm:text-2xl font-bold mb-2 text-center max-w-4xl mx-auto" style={{ fontFamily: "'Inter', 'Poppins', 'Roboto', sans-serif" }}>
+            <div className="output-section">
+              <h2 className="output-title">
                 {t('output.title')}
               </h2>
               {coverLetter ? (
@@ -769,33 +889,34 @@ export default function App() {
                   {/* Edit Mode */}
                   {editMode ? (
                     <>
-                      <textarea
-                        value={editedLetter}
-                        onChange={e => setEditedLetter(e.target.value)}
-                        className="w-full min-h-[350px] sm:min-h-[400px] border rounded-lg p-3 text-sm sm:text-base bg-gray-50 dark:bg-gray-800 dark:text-gray-100 focus:ring-2 focus:ring-blue-300 transition"
-                        style={{
-                          direction: language === "Arabic" ? "rtl" : "ltr",
-                          textAlign: language === "Arabic" ? "right" : "left",
-                          fontSize: "1.1rem"
-                        }}
-                      />
-                      {prevLetter && (
-                        <div className="mt-4 text-sm text-gray-500">
-                          <span className="font-semibold" style={{ fontSize: "1.1em" }}>{t('previousVersion')}:</span>
-                          <pre
-                            className="whitespace-pre-wrap bg-gray-100 dark:bg-gray-800 rounded p-2 mt-1 border max-h-40 overflow-y-auto"
-                            style={{
-                              fontSize: "1.08em",
-                              fontFamily: "'Inter', 'Poppins', 'Roboto', sans-serif"
-                            }}
-                          >
-                            {prevLetter}
-                          </pre>
-                        </div>
-                      )}
-                      <div className="flex justify-center gap-3 mt-4">
+                      <div className="output-content">
+                        <textarea
+                          value={editedLetter}
+                          onChange={e => setEditedLetter(e.target.value)}
+                          className="w-full min-h-[350px] sm:min-h-[400px] border rounded-lg p-3 text-sm sm:text-base bg-gray-50 dark:bg-gray-800 dark:text-gray-100 focus:ring-2 focus:ring-blue-300 transition"
+                          style={{
+                            direction: language === "Arabic" ? "rtl" : "ltr",
+                            textAlign: language === "Arabic" ? "right" : "left",
+                            fontSize: "1.1rem"
+                          }}
+                        />
+                        {prevLetter && (
+                          <div className="mt-4 text-sm text-gray-500 dark:text-gray-400">
+                            <span className="font-semibold" style={{ fontSize: "1.1em" }}>{t('previousVersion')}:</span>
+                            <pre
+                              className="whitespace-pre-wrap bg-gray-100 dark:bg-gray-800 rounded p-2 mt-1 border max-h-40 overflow-y-auto"
+                              style={{
+                                fontSize: "1.08em",
+                                fontFamily: "'Inter', 'Poppins', 'Roboto', sans-serif"
+                              }}
+                            >
+                              {prevLetter}
+                            </pre>
+                          </div>
+                        )}
+                      </div>
+                      <div className="output-actions">
                         <button
-                          className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-semibold transition"
                           onClick={() => {
                             setCoverLetter(editedLetter);
                             setPrevLetter(coverLetter);
@@ -813,7 +934,6 @@ export default function App() {
                           {t('save')}
                         </button>
                         <button
-                          className="bg-gray-200 hover:bg-gray-300 text-gray-800 px-4 py-2 rounded-lg font-semibold transition"
                           onClick={() => setEditMode(false)}
                         >
                           {t('cancel')}
@@ -822,52 +942,56 @@ export default function App() {
                     </>
                   ) : (
                     <>
-                      <pre
-                        className={`whitespace-pre-wrap font-mono flex-1 transition-all duration-300 rounded-lg border p-3 bg-gray-50 dark:bg-gray-800 ${
-                          expanded ? "max-h-[900px]" : "max-h-[400px]"
-                        } min-h-[320px] sm:min-h-[400px] w-full text-xs sm:text-base overflow-auto`}
-                        style={{
-                          fontFamily: "inherit",
-                          direction: language === "Arabic" ? "rtl" : "ltr",
-                          textAlign: language === "Arabic" ? "right" : "left",
-                          color: dark ? "#fff" : "#222"
-                        }}
-                      >
-                        {highlightKeywords(coverLetter, keywords)}
-                      </pre>
-                      <div className="flex justify-center gap-2">
-                        <button
-                          className="mt-2 flex items-center text-blue-600 underline text-2xl transition"
-                          onClick={() => {
-                            navigator.clipboard.writeText(coverLetter);
-                            setCopied(true);
-                            setTimeout(() => setCopied(false), 1000);
+                      <div className="output-content">
+                        <pre
+                          className={`whitespace-pre-wrap font-mono flex-1 transition-all duration-300 rounded-lg border p-3 bg-gray-50 dark:bg-gray-800 ${
+                            expanded ? "max-h-[900px]" : "max-h-[400px]"
+                          } min-h-[320px] sm:min-h-[400px] w-full text-xs sm:text-base overflow-auto`}
+                          style={{
+                            fontFamily: "inherit",
+                            direction: language === "Arabic" ? "rtl" : "ltr",
+                            textAlign: language === "Arabic" ? "right" : "left",
+                            color: dark ? "#fff" : "#222"
                           }}
-                          title={copied ? t('copied') : t('copyClipboard')}
                         >
-                          {copied ? <MdOutlineDone /> : <BiCopy />}
-                        </button>
-                        <button
-                          className="mt-2 ml-2 text-blue-500 underline text-base flex items-center transition-transform"
-                          onClick={() => setExpanded((e) => !e)}
-                          title={expanded ? t('collapse') : t('expand')}
-                        >
-                          {expanded ? (
-                            <span className="transition-transform duration-200 rotate-180"><MdExpandMore size={22} /></span>
-                          ) : (
-                            <MdExpandMore size={22} />
-                          )}
-                        </button>
-                        <button
-                          className="mt-2 ml-2 text-blue-600 underline text-2xl flex items-center transition"
-                          onClick={() => {
-                            setEditedLetter(coverLetter);
-                            setEditMode(true);
-                          }}
-                          title={t('edit')}
-                        >
-                          <MdOutlineEdit />
-                        </button>
+                          {highlightKeywords(coverLetter, keywords)}
+                        </pre>
+                      </div>
+                      <div className="output-actions">
+                        <div className="flex justify-center gap-4 mt-4">
+                          <button
+                            className="text-blue-600 hover:text-blue-700 transition-colors"
+                            onClick={() => {
+                              navigator.clipboard.writeText(coverLetter);
+                              setCopied(true);
+                              setTimeout(() => setCopied(false), 1000);
+                            }}
+                            title={copied ? t('copied') : t('copyClipboard')}
+                          >
+                            {copied ? <MdOutlineDone size={24} /> : <BiCopy size={24} />}
+                          </button>
+                          <button
+                            className="text-blue-500 hover:text-blue-600 transition-colors"
+                            onClick={() => setExpanded((e) => !e)}
+                            title={expanded ? t('collapse') : t('expand')}
+                          >
+                            {expanded ? (
+                              <span className="transition-transform duration-200 rotate-180"><MdExpandMore size={24} /></span>
+                            ) : (
+                              <MdExpandMore size={24} />
+                            )}
+                          </button>
+                          <button
+                            className="text-blue-600 hover:text-blue-700 transition-colors"
+                            onClick={() => {
+                              setEditedLetter(coverLetter);
+                              setEditMode(true);
+                            }}
+                            title={t('edit')}
+                          >
+                            <MdOutlineEdit size={24} />
+                          </button>
+                        </div>
                       </div>
                     </>
                   )}
@@ -876,10 +1000,15 @@ export default function App() {
                     <div className={`mt-4 mx-auto max-w-lg w-full rounded-xl border-2 p-5 flex flex-col items-center text-center shadow transition bg-white dark:bg-gray-900 ${SCORE_COLORS[jobFitScore.border_color]}`}>
                       <div className="flex items-center justify-center gap-2 mb-2">
                         <span className="text-3xl">{jobFitScore.match_icon}</span>
-                        <span className={`text-lg font-bold ${language === 'ar' ? 'text-xl' : ''}`}>{t('jobFitScore')}:</span>
+                        <span className={`text-lg font-bold ${language === 'ar' ? 'text-xl' : ''}`}>{t('jobFit.title')}:</span>
                         <span className={`text-4xl font-extrabold ml-2 ${language === 'ar' ? 'text-5xl' : ''}`}>{jobFitScore.score}%</span>
                       </div>
                       <div className={`text-base font-semibold mb-2 ${language === 'ar' ? 'text-lg' : ''}`}>{t(`jobFit.${jobFitScore.match_level}`)}</div>
+                      <div className="text-sm text-gray-700 dark:text-gray-200">
+                        {t('jobFit.resumeMatchPercentage', { score: jobFitScore.score })}
+                        <br />
+                        {t(`jobFit.${jobFitScore.explanation[1]}`)}
+                      </div>
                     </div>
                   )}
                   {/* Requirement Match Details */}
@@ -904,7 +1033,7 @@ export default function App() {
                             style={{ width: `${jobFitScore.score}%` }}
                           ></div>
                         </div>
-                        <div className="text-xs text-right text-gray-500 mt-1">{jobFitScore.score}% {t('jobFit.match')}</div>
+                        <div className="text-xs text-right text-gray-500 mt-1">{jobFitScore.score}% {t('match')}</div>
                       </div>
                       <div className="flex flex-col sm:flex-row gap-4">
                         <div className="flex-1 min-w-[120px] max-h-40 overflow-y-auto pr-1">
@@ -961,7 +1090,7 @@ export default function App() {
                   )}
                 </>
               ) : (
-                <div className="text-gray-400 text-center mt-12 text-sm sm:text-base">{t('output.empty')}</div>
+                <div className="output-empty">{t('output.empty')}</div>
               )}
             </div>
           </section>

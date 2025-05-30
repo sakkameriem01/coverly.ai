@@ -23,7 +23,7 @@
       "editCompany": "click to edit if it's not right"
     },
     "coverLetterLanguage": {
-      "label": "Cover Letter Language"
+      "label": "Language"
     },
     "tone": {
       "label": "Tone",
@@ -106,7 +106,13 @@
     "considerTailoring": "Consider tailoring your resume more closely to this role 💪",
     "goodStart": "Good start! You could improve your match by highlighting more relevant experience 🎯",
     "greatMatch": "Great match! Your experience aligns well with this role 🎉",
-    "requirementsExplanation": "Matched requirements are found in your resume and the job post. Missing ones are what employers might expect but don't appear in your resume"
+    "requirementsExplanation": "Matched requirements are found in your resume and the job post. Missing ones are what employers might expect but don't appear in your resume",
+    "match": "match",
+    "skills": "Skills",
+    "tools": "Tools",
+    "certifications": "Certifications",
+    "education": "Education",
+    "experience": "Experience"
   },
   "coverLetterRating": {
     "title": "Cover Letter Rating",

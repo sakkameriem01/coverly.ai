@@ -200,20 +200,20 @@ def generate_cover_letter():
         total = len(unique_requirements) if unique_requirements else 1
         score = int((len(matched) / total) * 100)
         if score < 30:
-            match_level = "lowMatch"
+            match_level = "Low Match"
             match_icon = "🔴"
             border_color = "red"
-            encouragement = "considerTailoring"
+            encouragement = "Consider tailoring your resume more closely to this role 💪"
         elif score < 60:
-            match_level = "moderateMatch"
+            match_level = "Moderate Match"
             match_icon = "🟡"
             border_color = "yellow"
-            encouragement = "goodStart"
+            encouragement = "Good start! You could improve your match by highlighting more relevant experience 🎯"
         else:
-            match_level = "strongMatch"
+            match_level = "Strong Match"
             match_icon = "🟢"
             border_color = "green"
-            encouragement = "greatMatch"
+            encouragement = "Great match! Your experience aligns well with this role 🎉"
 
         # Generate cover letter using Gemini
         cover_letter_prompt = lang_prompts["cover_letter"].format(tone=tone) + f"\n\nResume:\n{resume_text}\n\nJob Description:\n{job_description}"
@@ -231,7 +231,7 @@ def generate_cover_letter():
                 'match_icon': match_icon,
                 'border_color': border_color,
                 'explanation': [
-                    "resumeMatchPercentage",
+                    f"Your resume matches {score}% of the job requirements.",
                     encouragement
                 ],
                 'keywords': {
